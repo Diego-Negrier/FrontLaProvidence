@@ -365,6 +365,10 @@ BUILD_START=$(date +%s)
 if docker buildx build \
     --platform linux/amd64 \
     --tag "$FULL_IMAGE" \
+    --build-arg NEXT_PUBLIC_API_URL=https://api-laprovidence.data-worlds.com \
+    --build-arg NEXT_PUBLIC_APP_NAME="La Providence" \
+    --build-arg NEXT_PUBLIC_APP_VERSION=1.0.0 \
+    --build-arg NEXT_PUBLIC_MEDIA_BASE_URL=https://dataworlds.direct.quickconnect.to/public/LaProvidence/media \
     --load \
     "$BUILD_CONTEXT"; then
     
