@@ -36,6 +36,8 @@ COPY package*.json ./
 COPY next.config.js ./
 COPY tsconfig.json ./
 COPY next-env.d.ts* ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
 COPY public ./public
 COPY app ./app
 

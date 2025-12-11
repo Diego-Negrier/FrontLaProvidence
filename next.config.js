@@ -5,6 +5,11 @@ const nextConfig = {
 
   // Désactiver la télémétrie
 
+  // ✅ Optimisation CSS pour production
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+
   // Configuration des images
   images: {
     remotePatterns: [

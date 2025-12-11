@@ -44,7 +44,6 @@ npm install typescript @types/react @types/node
 
 
 
-
 # 1. Aller dans le dossier du frontend
 cd /Users/diego-negrier/SynologyDrive/APPLICATION_PROJET/ProjetLaProvidence/FrontLaProvidence
 
