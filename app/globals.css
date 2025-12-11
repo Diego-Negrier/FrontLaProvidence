@@ -432,6 +432,19 @@ button:disabled {
   outline-offset: 2px;
 }
 
+/* Menu mobile button - masqué sur desktop */
+.mobile-menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .mobile-menu-button {
+    display: none !important;
+  }
+}
+
 /* Impression */
 @media print {
   * {

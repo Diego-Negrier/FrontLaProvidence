@@ -5,15 +5,14 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useTheme } from '@/app/contexts/ThemeContext';
-import { FaShoppingCart, FaUser, FaBars, FaTimes, FaStore, FaTruck } from 'react-icons/fa';
-import { getContrastColor } from '@/app/utils/colorUtils';
+import { FaShoppingCart, FaUser, FaBars, FaTimes, FaStore, FaTruck, FaHome, FaClipboardList, FaSignOutAlt } from 'react-icons/fa';
 
 export default function Header() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(0);
   const [isCartAnimating, setIsCartAnimating] = useState(false);
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const { theme } = useTheme();
 
   // Écouter les événements d'ajout au panier
@@ -47,14 +46,14 @@ export default function Header() {
 
   // Navigation publique (tous les utilisateurs)
   const publicNavLinks = [
-    { href: '/', label: 'Accueil', icon: null },
+    { href: '/', label: 'Accueil', icon: FaHome },
     { href: '/produits', label: 'Magasin', icon: FaStore },
     { href: '/fournisseurs', label: 'Fournisseurs', icon: FaTruck },
   ];
 
   // Navigation privée (utilisateurs connectés uniquement)
   const privateNavLinks = [
-    { href: '/commande', label: 'Mes Commandes', icon: null },
+    { href: '/commande', label: 'Mes Commandes', icon: FaClipboardList },
   ];
 
   // Combiner les liens selon l'authentification
@@ -68,8 +67,9 @@ export default function Header() {
       top: 0,
       zIndex: 50,
       backgroundColor: theme.colors.cardBg,
-      borderBottom: `2px solid ${theme.colors.border}`,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+      borderBottom: `1px solid ${theme.colors.border}`,
+      boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+      backdropFilter: 'blur(10px)'
     }}>
       <div style={{
         maxWidth: '1400px',
@@ -80,7 +80,8 @@ export default function Header() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: '70px'
+          height: '64px',
+          gap: '1rem'
         }}>
           {/* Logo */}
           <Link
@@ -90,20 +91,22 @@ export default function Header() {
               alignItems: 'center',
               gap: '0.5rem',
               textDecoration: 'none',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              flexShrink: 0
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.transform = 'scale(1.03)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             <div style={{
-              fontSize: '1.8rem',
-              fontWeight: 'bold',
+              fontSize: 'clamp(1.2rem, 4vw, 1.5rem)',
+              fontWeight: '700',
               color: theme.colors.primary,
-              fontFamily: theme.fonts.heading
+              fontFamily: theme.fonts.heading,
+              whiteSpace: 'nowrap'
             }}>
               🏛️ La Providence
             </div>
@@ -114,42 +117,44 @@ export default function Header() {
             className="hidden md:flex"
             style={{
               alignItems: 'center',
-              gap: '2rem'
+              gap: '0.5rem',
+              flex: 1,
+              justifyContent: 'center'
             }}
           >
             {navLinks.map((link) => {
               const Icon = link.icon;
+              const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   style={{
-                    fontWeight: '600',
-                    fontSize: '1rem',
-                    color: pathname === link.href ? theme.colors.primary : theme.colors.text,
+                    fontWeight: '500',
+                    fontSize: '0.95rem',
+                    color: isActive ? theme.colors.primary : theme.colors.text,
                     textDecoration: 'none',
                     padding: '0.5rem 1rem',
                     borderRadius: '8px',
-                    backgroundColor: pathname === link.href ? theme.colors.primary + '10' : 'transparent',
-                    transition: 'all 0.3s ease',
+                    backgroundColor: isActive ? theme.colors.primary + '15' : 'transparent',
+                    transition: 'all 0.2s ease',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    gap: '0.5rem',
+                    whiteSpace: 'nowrap'
                   }}
                   onMouseEnter={(e) => {
-                    if (pathname !== link.href) {
-                      e.currentTarget.style.backgroundColor = theme.colors.background;
-                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = theme.colors.primary + '08';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (pathname !== link.href) {
+                    if (!isActive) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.transform = 'translateY(0)';
                     }
                   }}
                 >
-                  {Icon && <Icon />}
+                  {Icon && <Icon style={{ fontSize: '1rem' }} />}
                   {link.label}
                 </Link>
               );
@@ -157,25 +162,29 @@ export default function Header() {
           </nav>
 
           {/* Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            flexShrink: 0
+          }}>
             {/* Panier - toujours visible */}
             <Link
               href="/panier"
               style={{
                 position: 'relative',
                 padding: '0.5rem',
-                borderRadius: '50%',
-                backgroundColor: pathname === '/panier' ? theme.colors.primary + '20' : 'transparent',
-                transition: 'all 0.3s ease',
+                borderRadius: '8px',
+                backgroundColor: pathname === '/panier' ? theme.colors.primary + '15' : 'transparent',
+                transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transform: isCartAnimating ? 'scale(1.3)' : 'scale(1)',
+                transform: isCartAnimating ? 'scale(1.15)' : 'scale(1)',
               }}
               onMouseEnter={(e) => {
                 if (!isCartAnimating) {
-                  e.currentTarget.style.backgroundColor = theme.colors.primary + '20';
-                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.backgroundColor = theme.colors.primary + '15';
                 }
               }}
               onMouseLeave={(e) => {
@@ -183,36 +192,34 @@ export default function Header() {
                   if (pathname !== '/panier') {
                     e.currentTarget.style.backgroundColor = 'transparent';
                   }
-                  e.currentTarget.style.transform = 'scale(1)';
                 }
               }}
             >
               <FaShoppingCart
                 style={{
-                  fontSize: '1.5rem',
+                  fontSize: '1.3rem',
                   color: pathname === '/panier' ? theme.colors.primary : theme.colors.text,
-                  transition: 'all 0.3s ease',
-                  transform: isCartAnimating ? 'rotate(20deg)' : 'rotate(0deg)',
+                  transition: 'all 0.2s ease',
                 }}
               />
               {cartItemsCount > 0 && (
                 <span
                   style={{
                     position: 'absolute',
-                    top: '-4px',
-                    right: '-4px',
+                    top: '-2px',
+                    right: '-2px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minWidth: '20px',
-                    height: '20px',
+                    minWidth: '18px',
+                    height: '18px',
                     padding: '0 4px',
-                    fontSize: '0.75rem',
-                    fontWeight: 'bold',
-                    borderRadius: '10px',
+                    fontSize: '0.7rem',
+                    fontWeight: '600',
+                    borderRadius: '9px',
                     backgroundColor: theme.colors.error,
-                    color: getContrastColor(theme.colors.error),
-                    animation: isCartAnimating ? 'pulse 0.6s ease' : 'none',
+                    color: '#fff',
+                    border: `2px solid ${theme.colors.cardBg}`,
                   }}
                 >
                   {cartItemsCount}
@@ -222,78 +229,87 @@ export default function Header() {
 
             {/* Authentification */}
             {isAuthenticated ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <>
                 <Link
                   href="/parametre"
+                  className="hidden sm:flex"
                   style={{
                     padding: '0.5rem',
-                    borderRadius: '50%',
-                    backgroundColor: pathname === '/parametre' ? theme.colors.primary + '20' : 'transparent',
-                    transition: 'all 0.3s ease',
+                    borderRadius: '8px',
+                    backgroundColor: pathname === '/parametre' ? theme.colors.primary + '15' : 'transparent',
+                    transition: 'all 0.2s ease',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = theme.colors.primary + '20';
-                    e.currentTarget.style.transform = 'scale(1.1)';
+                    e.currentTarget.style.backgroundColor = theme.colors.primary + '15';
                   }}
                   onMouseLeave={(e) => {
                     if (pathname !== '/parametre') {
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }
-                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                 >
                   <FaUser style={{
-                    fontSize: '1.5rem',
+                    fontSize: '1.3rem',
                     color: pathname === '/parametre' ? theme.colors.primary : theme.colors.text
                   }} />
                 </Link>
                 <button
                   onClick={logout}
+                  className="hidden sm:flex"
                   style={{
                     padding: '0.5rem 1rem',
-                    borderRadius: '50px',
-                    fontWeight: '600',
-                    backgroundColor: theme.colors.error,
-                    color: getContrastColor(theme.colors.error),
-                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '500',
+                    backgroundColor: 'transparent',
+                    color: theme.colors.error,
+                    border: `1px solid ${theme.colors.error}40`,
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    fontSize: '0.9rem'
+                    transition: 'all 0.2s ease',
+                    fontSize: '0.9rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                    e.currentTarget.style.boxShadow = `0 4px 12px ${theme.colors.error}60`;
+                    e.currentTarget.style.backgroundColor = theme.colors.error;
+                    e.currentTarget.style.color = '#fff';
+                    e.currentTarget.style.borderColor = theme.colors.error;
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = theme.colors.error;
+                    e.currentTarget.style.borderColor = theme.colors.error + '40';
                   }}
                 >
-                  Déconnexion
+                  <FaSignOutAlt />
+                  <span>Déconnexion</span>
                 </button>
-              </div>
+              </>
             ) : (
               <Link
                 href="/login"
+                className="hidden sm:flex"
                 style={{
-                  padding: '0.5rem 1.5rem',
-                  borderRadius: '50px',
-                  fontWeight: '600',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  fontWeight: '500',
                   backgroundColor: theme.colors.primary,
-                  color: getContrastColor(theme.colors.primary),
+                  color: '#fff',
                   textDecoration: 'none',
-                  transition: 'all 0.3s ease',
-                  fontSize: '1rem'
+                  transition: 'all 0.2s ease',
+                  fontSize: '0.9rem',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = `0 4px 12px ${theme.colors.primary}60`;
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = `0 4px 12px ${theme.colors.primary}40`;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
@@ -304,7 +320,7 @@ export default function Header() {
             {/* Menu Mobile */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="block md:hidden"
+              className="mobile-menu-button"
               style={{
                 padding: '0.5rem',
                 border: 'none',
@@ -329,11 +345,13 @@ export default function Header() {
             style={{
               paddingTop: '1rem',
               paddingBottom: '1rem',
-              borderTop: `2px solid ${theme.colors.border}`
+              borderTop: `1px solid ${theme.colors.border}`,
+              backgroundColor: theme.colors.cardBg
             }}
           >
             {navLinks.map((link) => {
               const Icon = link.icon;
+              const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
@@ -342,32 +360,103 @@ export default function Header() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
+                    gap: '0.75rem',
                     padding: '0.75rem 1rem',
-                    fontWeight: '600',
-                    color: pathname === link.href ? theme.colors.primary : theme.colors.text,
-                    backgroundColor: pathname === link.href ? theme.colors.primary + '10' : 'transparent',
+                    fontWeight: '500',
+                    fontSize: '0.95rem',
+                    color: isActive ? theme.colors.primary : theme.colors.text,
+                    backgroundColor: isActive ? theme.colors.primary + '10' : 'transparent',
                     textDecoration: 'none',
                     borderRadius: '8px',
                     marginBottom: '0.5rem',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (pathname !== link.href) {
-                      e.currentTarget.style.backgroundColor = theme.colors.background;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (pathname !== link.href) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  {Icon && <Icon />}
+                  {Icon && <Icon style={{ fontSize: '1.1rem' }} />}
                   {link.label}
                 </Link>
               );
             })}
+
+            {/* Actions mobile */}
+            <div style={{
+              marginTop: '1rem',
+              paddingTop: '1rem',
+              borderTop: `1px solid ${theme.colors.border}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem'
+            }}>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    href="/parametre"
+                    onClick={() => setIsMenuOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      padding: '0.75rem 1rem',
+                      fontWeight: '500',
+                      fontSize: '0.95rem',
+                      color: pathname === '/parametre' ? theme.colors.primary : theme.colors.text,
+                      backgroundColor: pathname === '/parametre' ? theme.colors.primary + '10' : 'transparent',
+                      textDecoration: 'none',
+                      borderRadius: '8px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <FaUser style={{ fontSize: '1.1rem' }} />
+                    Paramètres
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      logout();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      padding: '0.75rem 1rem',
+                      fontWeight: '500',
+                      fontSize: '0.95rem',
+                      color: theme.colors.error,
+                      backgroundColor: 'transparent',
+                      border: `1px solid ${theme.colors.error}40`,
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <FaSignOutAlt style={{ fontSize: '1.1rem' }} />
+                    Déconnexion
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.75rem',
+                    padding: '0.75rem 1rem',
+                    fontWeight: '500',
+                    fontSize: '0.95rem',
+                    color: '#fff',
+                    backgroundColor: theme.colors.primary,
+                    textDecoration: 'none',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Connexion
+                </Link>
+              )}
+            </div>
           </nav>
         )}
       </div>
