@@ -1,0 +1,187 @@
+/* ProduitDetail.module.css */
+
+.productDetailContainer {
+  display: flex;
+    align-items: center; /* Centre le conteneur horizontalement */
+    justify-content: center; /* Centre verticalement */
+    height: 80vh;
+    width: 100vw; /* Remplit toute la largeur de la fenêtre */
+    margin: 0; /* Pas de marge */
+    padding: 20px; /* Ajouter de la marge intérieure */
+    background-size: cover; /* Couvre tout le conteneur */
+    background-position: center; /* Centre l'image de fond */
+    background-repeat: no-repeat; /* Pas de répétition de l'image de fond */
+    position: relative; /* Position relative pour le contenu */
+    overflow: hidden; /* Évite le débordement */
+    object-fit: cover;
+}
+
+
+.productInfoContainer {
+    display: flex; /* Utilise un conteneur flex pour aligner l'image et le texte */
+    padding: 1rem;
+    border: 1px solid #ccc; /* Bordure des cartes produits */
+    border-radius: 4px; /* Coins arrondis */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Ombre légère */
+    background-color: rgba(255, 255, 255, 0.9); /* Fond blanc avec transparence (90%) */
+    transition: transform 0.2s; /* Transition pour l'effet de survol */
+    position: relative; /* Pour un positionnement absolu si besoin */
+}
+/* Ajoutez éventuellement une règle pour l'effet de survol */
+.productInfoContainer:hover {
+    transform: scale(1.03); /* Légère augmentation de la taille au survol */
+}
+.productImage {
+    width: auto; /* Largeur à 100% du conteneur parent */
+    height: auto; /* Hauteur automatique pour conserver le ratio */
+    border-radius: 8px; /* Coins arrondis pour l'image */
+    object-fit:c; /* S'assure que l'image couvre son conteneur tout en gardant le ratio d'aspect */
+}
+
+.productTextContainer {
+    display: flex;
+    flex-direction: column; /* Aligne le texte verticalement */
+}
+.productInfoContainer img{
+    width:50%;
+    height: auto;
+}
+
+/* Fallback icône produit quand pas d'image */
+.produitIconFallback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  height: auto;
+  min-height: 300px;
+  background-color: #f8f9fa;
+  border: 2px solid var(--color-accent);
+  border-radius: 13px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.produitIconEmoji {
+  font-size: 150px;
+  filter: grayscale(0%);
+  transition: transform 0.3s ease;
+}
+
+.produitIconEmoji:hover {
+  transform: scale(1.1);
+}
+.productTitle {
+    color: var(--police-color); /* Couleur du titre */
+    margin-bottom: 10px; /* Espacement sous le titre */
+    text-align: center; /* Centre le titre */
+}
+
+/* ProduitDetail.module.css */
+
+.outOfStock {
+    color: red; /* Couleur rouge pour attirer l'attention */
+    font-weight: bold; /* Gras pour mettre en évidence le texte */
+    margin-top: 10px; /* Un peu d'espace au-dessus du texte */
+}
+.productDescription {
+    text-align: left; /* Aligne la description à gauche */
+    margin: 0; /* Supprime les marges pour un alignement propre */
+    color: #333; /* Couleur de texte par défaut */
+    font-size: 16px; /* Taille de la police pour la description */
+    line-height: 1.5; /* Espace entre les lignes pour une meilleure lisibilité */
+    padding: 10px 0; /* Ajoute un espacement intérieur */
+    border-top: 1px solid var(--principal-color); /* Bordure supérieure pour séparer le titre de la description */
+    border-bottom: 1px solid var(--principal-color); /* Bordure inférieure pour un effet de séparation */
+    max-width: 600px; /* Largeur maximale pour la description */
+    width: 100%; /* Prend toute la largeur disponible */
+    margin-left: 10px; /* Ajoute un petit espacement à gauche si nécessaire */
+}
+
+.productPrice {
+    font-weight: bold; /* Met le prix en gras */
+    color: var(--second-color); /* Couleur pour le prix */
+    margin-top: 10px; /* Espacement au-dessus du prix */
+    font-size: 24px; /* Augmente la taille de la police pour le prix */
+}
+
+.quantityContainer {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.quantityContainer button {
+    color: white; /* Couleur du texte */
+    border: none; /* Pas de bordure */
+    padding: 0.5rem 1rem; /* Padding pour le bouton */
+    cursor: pointer; /* Curseur en main */
+    font-size: 1.2rem; /* Taille de police */
+}
+
+.quantityContainer button:disabled {
+    background-color: #ccc; /* Couleur de fond pour le bouton désactivé */
+    cursor: not-allowed; /* Curseur pour bouton désactivé */
+}
+
+.quantityDisplay {
+    font-size: 1.5rem; /* Taille de police pour la quantité */
+    margin: 0 1rem; /* Marge pour espacer les éléments */
+}
+
+.notification {
+    background-color: var(--second-color); /* Couleur d'arrière-plan de la notification */
+    color: white; /* Couleur du texte */
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #d6e9c6; /* Bordure verte */
+    text-align: center;
+  }
+
+
+  .produitNumero {
+    font-size: 18px; /* Réduire la taille de la police */
+    color: #999; /* Une couleur grise pour rendre le texte moins voyant */
+    display: block; /* Pour que chaque numéro soit sur une nouvelle ligne si besoin */
+    margin-top: 4px; /* Espacement au-dessus */
+}
+
+
+/* Media queries pour écrans plus petits */
+@media (max-width: 800px) {
+    .productInfoContainer{
+        flex-direction: column;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 15px;
+        width: 90vw;
+
+
+    }
+    .productInfoContainer img{
+        width:150px;
+        height: auto;
+    }
+    .productDetailContainer {
+        padding: 10px;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        display: flex;
+    }
+  
+    .productTitle {
+      font-size: 1.3em; /* Réduction supplémentaire pour petits écrans */
+    }
+  
+    .productPrice {
+      font-size: 18px;
+    }
+  
+    .productDescription {
+      font-size: 12px;
+    }
+
+
+  }

@@ -1,0 +1,38 @@
+
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main  # Déclencher le déploiement lorsque le code est poussé sur la branche principale
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create Deployment
+        run: |
+          # Faites une requête API pour créer un déploiement
+          # Remplacez cette partie par votre propre code de création de déploiement
+          # Utilisez ${{ secrets.DEPLOYMENT_TOKEN }} pour l'authentification
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: 45  # Port personnalisé
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            cd /var/services/web/OcciDelice
+            # Force la mise à jour du dépôt distant
+            git fetch origin
+            git reset --hard origin/main  # Remplace "main" par la branche que vous utilisez
+            # Affiche l'état du dépôt
+            git status
+            # Affiche l'historique des commits récents
+            git log --oneline -n 5
+            # Met à jour les conteneurs Docker avec sudo
+            export PATH="$PATH:/usr/local/bin"
+            # Exécuter docker-compose build
+            echo ${{ secrets.PASSWORD }} | sudo -S DOCKER_BUILDKIT=1 docker-compose up -d --build 

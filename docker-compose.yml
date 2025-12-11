@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  frontlaprovidence:
+    container_name: frontlaprovidence
+    image: frontlaprovidence:latest
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    mem_limit: 1g
+    mem_reservation: 512m
+
+    networks:
+      - proxy
+
+    labels:
+      # ===== Traefik Activation =====
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+
+      # ===== HTTP → HTTPS Redirect =====
+      - "traefik.http.routers.frontlaprovidence-http.rule=Host(`laprovidence.data-worlds.com`) || Host(`www.laprovidence.data-worlds.com`)"
+      - "traefik.http.routers.frontlaprovidence-http.entrypoints=web"
+      - "traefik.http.routers.frontlaprovidence-http.middlewares=frontlaprovidence-redirect-https"
+
+      # ===== HTTPS Router =====
+      - "traefik.http.routers.frontlaprovidence-https.rule=Host(`laprovidence.data-worlds.com`) || Host(`www.laprovidence.data-worlds.com`)"
+      - "traefik.http.routers.frontlaprovidence-https.entrypoints=websecure"
+      - "traefik.http.routers.frontlaprovidence-https.tls=true"
+      - "traefik.http.routers.frontlaprovidence-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.frontlaprovidence-https.service=frontlaprovidence-service"
+      - "traefik.http.routers.frontlaprovidence-https.middlewares=frontlaprovidence-security-headers,frontlaprovidence-compress"
+
+      # ===== Service =====
+      - "traefik.http.services.frontlaprovidence-service.loadbalancer.server.port=3007"
+      - "traefik.http.services.frontlaprovidence-service.loadbalancer.healthcheck.path=/"
+      - "traefik.http.services.frontlaprovidence-service.loadbalancer.healthcheck.interval=10s"
+      - "traefik.http.services.frontlaprovidence-service.loadbalancer.healthcheck.timeout=5s"
+
+      # ===== Middlewares =====
+      - "traefik.http.middlewares.frontlaprovidence-redirect-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.frontlaprovidence-redirect-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.frontlaprovidence-security-headers.headers.frameDeny=true"
+      - "traefik.http.middlewares.frontlaprovidence-security-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.frontlaprovidence-security-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.frontlaprovidence-security-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.frontlaprovidence-security-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.frontlaprovidence-security-headers.headers.stsPreload=true"
+      - "traefik.http.middlewares.frontlaprovidence-compress.compress=true"
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3007/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  proxy:
+    external: true

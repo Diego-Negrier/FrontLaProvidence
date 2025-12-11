@@ -1,0 +1,121 @@
+.menuTunnel {
+  display: flex;
+  justify-content: center; /* Centrer le menu */
+  align-items: center; /* Aligner les cercles au centre verticalement */
+  padding: 10px 0; /* Espacement vertical */
+  border-bottom: 1px solid var(--color-secondary);
+  border-top: 1px solid var(--color-secondary);
+
+  margin-bottom: 10px;
+}
+
+.menuTunnel ul {
+  list-style: none;
+  padding: 0;
+  display: flex; /* Disposition en ligne */
+  align-items: center; /* Aligner les éléments au centre */
+}
+
+.menuTunnel li {
+  display: flex;
+  align-items: center; /* Centrer le contenu verticalement */
+  margin: 0 20px; /* Espacement horizontal entre les étapes */
+}
+
+.circle {
+  width: 30px; /* Largeur du cercle */
+  height: 30px; /* Hauteur du cercle */
+  border-radius: 50%; /* Pour faire un cercle */
+  background-color: var(--color-accent); /* Couleur de fond par défaut */
+  color: white; /* Couleur du texte */
+  display: flex;
+  justify-content: center; /* Centrer le texte horizontalement */
+  align-items: center; /* Centrer le texte verticalement */
+  margin-right: 10px; /* Espacement entre le cercle et le nom de l'étape */
+  font-weight: bold; /* Mettre le texte en gras */
+  font-size: 16px; /* Taille du texte à l'intérieur du cercle */
+}
+
+.completed .circle {
+  background-color: var(--color-secondary); /* Couleur du cercle si l'étape est complétée */
+}
+
+.stepName {
+  color: var(--color-accent); /* Couleur par défaut pour le texte */
+  font-weight: normal; /* Normaliser le poids de la police */
+}
+
+.completed .stepName {
+  color: var(--color-secondary); /* Couleur du texte si l'étape est complétée */
+  font-weight: bold; /* Mettre le texte en gras */
+}
+/* Le texte du tooltip, caché par défaut */
+.tooltip {
+  visibility: hidden;
+  position: absolute;
+  display: none;
+}
+
+
+@media (max-width: 800px) {
+  .menuTunnel {
+    position: fixed;
+    z-index: 200;
+    top:30px;
+    justify-content: center; /* Aligne le contenu horizontalement à gauche */
+    height: 81%; /* Prend toute la hauteur de l'écran */
+    width: auto; /* Ajuste la largeur */
+    margin: 0; /* Supprime tout espacement externe */
+    display: flex;
+    flex-direction: column; /* Les éléments sont alignés en colonne */
+    align-items: center; /* Aligne les éléments à droite */
+    padding: auto; /* Garde l'espacement interne */
+    right: 0; /* Positionné sur le côté droit */
+    overflow-y: auto; /* Permet de scroller si le contenu dépasse */
+    background-color: transparent;
+    border: none
+}
+  .menuTunnel ul {
+    list-style: none; /* Retire les puces */
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column; /* Aligne les étapes verticalement */
+    justify-content: center; /* Distribution verticale des étapes */
+    width: 30%; /* Utilise la largeur complète */
+    align-items: center; /* Centre les éléments horizontalement */
+  }
+  .completed .stepName {
+    font-weight: bold; /* Mettre le texte en gras */
+  }
+  .menuTunnel li {
+    display: flex;
+    flex-direction: column; /* Cercles et noms empilés verticalement */
+    align-items: center; /* Centre les cercles et les noms */
+    justify-content: space-between;
+    margin: 3px 3px; /* Espacement vertical entre les étapes */
+}
+.menuTunnel .circle {
+  display: flex;
+  justify-content: center; /* Centre le contenu horizontalement dans le cercle */
+  align-items: center; /* Centre le contenu verticalement dans le cercle */
+  width: 30px; /* Taille du cercle */
+  height: 30px; /* Taille du cercle */
+
+  border-radius: 50%; /* Cercle parfait */
+  font-size: 1rem; /* Taille de l'icône ou du texte */
+  margin: 30px 3px; /* Espacement vertical entre les étapes */
+
+}
+
+
+
+
+.completed .circle {
+  }
+
+
+   .stepName {
+    display:none
+  }
+}

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./front  # Le répertoire où se trouve le Dockerfile de Next.js
+    container_name: next-frontend
+    volumes:
+      - ./front:/app
+      - /app/node_modules  # Ajoutez cette ligne si vous voulez monter node_modules dans le conteneur
+
+    ports:
+      - "4555:4555"
+    env_file:
+      - front/.env.local
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  uwsgi_data:
+  web_static:

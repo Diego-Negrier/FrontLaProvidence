@@ -1,0 +1,170 @@
+@import '~font-awesome/css/font-awesome.min.css';
+.parametreContainer {
+  max-width: 600px; /* Largeur maximale du conteneur */
+  width: 600px;
+  margin: 20px auto; /* Centre horizontalement avec marges automatiques */
+  padding: 20px; /* Espacement interne */
+  border-radius: 8px; /* Coins arrondis pour le conteneur */
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+}
+
+.parametreWrapper {
+  display: flex; /* Active Flexbox */
+  justify-content: center; /* Centre horizontalement */
+  align-items: center; /* Centre verticalement (si la hauteur est suffisante) */
+}
+
+.section {
+  margin-bottom: 30px; /* Espacement entre les sections */
+  padding: 15px; /* Espacement interne pour chaque section */
+  border: 1px solid #ccc; /* Bordure légère autour de chaque section */
+  border-radius: 4px; /* Coins arrondis */
+  background-color: var(--color-surface); /* Fond léger pour les sections */
+}
+
+.iconAndTitle {
+  display: flex; /* Utilise Flexbox pour aligner l'icône et le titre */
+  align-items: center; /* Centre verticalement */
+  cursor: pointer; /* Change le curseur pour indiquer que c'est cliquable */
+}
+
+.icon {
+  font-size: 24px; /* Taille de l'icône */
+  margin-right: 10px; /* Espacement entre l'icône et le titre */
+  color: var(--principal-color); /* Couleur de l'icône */
+}
+
+.formGroup {
+  width: 100%;
+  margin-bottom: 1rem; /* Space between form groups */
+}
+
+.formGroup textarea {
+  height:100px
+}
+
+
+
+.submitButton:hover {
+  background-color: var(--second-color); /* Couleur d'arrière-plan au survol */
+  transform: translateY(-2px); /* Élévation au survol */
+}
+
+
+.existingAddresses {
+  margin-top: 20px;
+}
+
+.addressCard {
+  position: relative; /* Position relative pour le conteneur */
+  padding: 10px; /* Espacement intérieur */
+  border: 1px solid #ccc; /* Bordure de la carte */
+  border-radius: 5px; /* Coins arrondis */
+  margin-bottom: 15px; /* Espacement entre les cartes */
+}
+
+.deleteIcon {
+  color: red; /* Couleur rouge pour la croix */
+  cursor: pointer;
+  font-size: 40px; /* Taille de la croix */
+  position: absolute; /* Position absolue pour placer en haut à droite */
+  top: -10px; /* Espacement du haut */
+  right: 10px; /* Espacement à droite */
+}
+
+.deleteIcon:hover {
+  color: darkred; /* Couleur lors du survol */
+}
+
+.addressCard:hover {
+  transform: scale(1.02); /* Légère mise à l'échelle au survol */
+}
+
+.addressDetails p{
+  margin: 5px 0; /* Espacement vertical entre les lignes */
+}
+
+.addressActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px; /* Espacement au-dessus des actions */
+}
+
+
+
+
+
+.passwordGeneral {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.passwordContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.passwordContainer input {
+  width: 100%;
+  padding-right: 40px; /* Laissez de l'espace pour l'icône */
+  padding-left: 10px;
+  font-size: 1em;
+  margin: 0;
+}
+.passwordContainer button[type="button"] {
+border: none 0;
+box-sizing: none;
+background-color: none;
+background: none;
+transform:none;
+outline: none;
+box-shadow:none
+
+
+}
+.passwordToggleButton {
+  position: absolute;
+  right: 10px;
+  top: -5px;
+  transform: translateY(-50%);
+  background: none;
+  cursor: pointer;
+  font-size: 1.2em; /* Ajustez la taille de l'icône */
+  color: var(--color-primary);
+  background-color: none;
+  padding: 0;
+  outline: none;
+  transform:none
+
+}
+.passwordToggleButton:hover {
+  outline: none; /* Assurez-vous que le bouton ne montre pas de contour lorsqu'il a le focus */
+  color: var( --button-principal-hover);
+  background-color: none;
+ transition: none;
+ transform:none
+
+
+}
+.submitButton {
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1em;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+
+.error, .success {
+  color: red;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+}
+

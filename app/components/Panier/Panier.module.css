@@ -1,0 +1,419 @@
+/* Conteneur du panier */
+.ContainerPanier{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  flex-direction: column;
+}
+.PanierCart {
+  background-color: var(--color-surface);
+  padding:20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin:  auto;
+  align-items: center; /* Centre le conteneur horizontalement */
+  justify-content: center; /* Centre verticalement */
+  width:95vw;
+  overflow-y: auto; /* Ajoute un défilement vertical automatique si nécessaire */
+  min-height:80vh;
+  
+}
+
+/* Liste des articles */
+.cartItems {
+  list-style-type: none; /* Supprime les puces de la liste */
+  padding: 20px; /* Supprime le padding par défaut */
+  margin: 0; /* Supprime la marge par défaut */
+  overflow-y: auto; /* Ajoute un défilement vertical automatique si nécessaire */
+  display: grid; /* Définit un système de grille */
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr)); /* Crée des colonnes flexibles */
+  gap: 10px; /* Espacement entre les éléments */
+  height: 40vh;
+  max-height:70vh
+
+}
+
+/* Chaque article du panier */
+.cartItem {
+  position: relative;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  margin: 0;
+  padding: 20px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-around;
+
+}
+
+.cartItem:hover {
+  background-color: #fff;
+}
+
+/* Image du produit à gauche */
+.cartProduitImage {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+.cartIteDetailEtAction{
+  display: flex;
+  flex-direction: row;
+  padding: 0px;
+  justify-content: center;
+  align-items: center;
+  margin: 0px;
+  height:150px
+
+
+}
+.cartItemActionsImage{
+  width: 50%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  margin: 0px;
+
+
+}
+.cartItemImage{
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+
+
+/* Conteneur pour les boutons sous l'image */
+.cartItemActions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+/* Informations sur le prix et la quantité */
+.QuantiteProduit{
+  font-size: 16px;
+  color: #555;
+}
+
+
+.cartItemActions button {
+  background-color: var(--color-primary);
+  color: white;
+  gap: 15px;
+  padding: 5px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0.25rem;
+  justify-content: flex-start;
+  display:flex
+
+}
+.cartItemActions button:hover {
+  background-color: var(--color-secondary);
+
+}
+
+
+
+/* Détails du produit à droite de l'image */
+.cartItemDetails {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  width:90%
+}
+
+/* Nom du produit */
+.cartItemTitreProduit {
+  font-size: 1.4rem; /* Taille du titre */
+  font-weight: bold; /* Texte en gras */
+  margin-bottom: 0px; /* Espacement sous le titre */
+}
+
+/* Référence du produit en couleur discrète */
+/* Référence du produit */
+.Reference {
+  font-size: 0.9rem; /* Plus petit que le titre */
+  color: #555; /* Couleur gris moyen */
+  font-style: italic; /* Style italique pour différenciation */
+  margin-top: 0;
+}
+
+
+/* Détails de la tarification */
+.QuantitePrix {
+  font-size: 1rem; /* Taille normale */
+  color: #333; /* Couleur gris plus doux */
+  display: block; /* Aligner sur une nouvelle ligne */
+  margin-bottom: 5px; /* Espacement sous les détails */
+}
+
+
+
+/* Croiser en haut à droite pour supprimer */
+.cartItem .removeButton {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: transparent;
+  border: none;
+  border-radius: 50% ;
+  width: 25px;
+  height: 25px;
+  font-size: 20px;
+  color: #fff;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  background-color:#ff4d4d ;
+
+}
+
+.cartItem .removeButton:hover {
+  color: #fff;
+  background-color:#ff4d4d ;
+}
+/* Résumé du panier */
+.cartSummary {
+  display: flex;
+  flex-direction: column; /* Organiser les éléments verticalement */
+  align-items: flex-end; /* Aligner tout à droite */
+  justify-content: center;
+  margin: 0;
+  font-family: 'Lora', serif;
+  text-align: right;
+  width:100%;
+}
+
+
+
+
+/* Conteneur pour aligner le bouton à droite */
+.recapButtonContainer {
+  display: flex;
+  justify-content: flex-end; /* Aligner les éléments contenus à droite */
+  width: 70%; /* Prend toute la largeur disponible */
+  padding: 10px 0; /* Ajouter un peu d'espacement vertical */
+}
+
+/* Bouton de récapitulatif */
+.recapButton {
+  display: flex;
+  align-items: center; /* Centrer l'icône et le texte verticalement */
+  gap: 8px; /* Espacement entre l'icône et le texte */
+  width:100%;
+  
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+.recapButton button {
+  display: flex;
+  align-items: center; /* Centrer l'icône et le texte verticalement */
+  gap: 8px; /* Espacement entre l'icône et le texte */
+
+}
+.recapButton button:hover {
+  background-color: var(--accentuation-color); /* Couleur au survol */
+}
+.recapButton button:focus {
+  background-color: var(--accentuation-color); /* Couleur au survol */
+}
+/* Bouton de suppression (Trash) */
+.TraskPanier {
+  justify-content: flex-end;
+  text-align: left;
+  display: flex;
+
+}
+.TraskPanier button{
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espacement entre l'icône et le texte */
+  color: #fff;
+  background: var(--color-error);
+  border: none;
+  cursor: pointer;
+  justify-content: right;
+  text-align: left;
+  font-size: 16px;
+  margin: 15px;
+  padding: 10px;
+  text-align: right;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width:100%
+
+}
+
+.TraskPanier button:hover {
+  background-color: var(--color-error);
+  color: #fff;
+}
+.TraskPanier button:focus {
+  background-color: var(--color-error);
+  color: #fff;
+}
+/* Actions du panier sur mobile */
+.cartItemActionsMobile {
+  display: none;
+}
+/* Responsive Design */
+@media (max-width: 500px) {
+
+  .ContainerPanier{
+    flex-direction: column;
+    display: flex;
+    width: 90vw;
+    height:auto;
+    box-shadow: none
+
+
+  }
+  .PanierCart{
+    display: flex;
+    flex-direction: column;
+    width:94vw;
+    box-shadow: none;
+    background-color: transparent;
+    
+  }
+  .cartItems {
+    list-style-type: none; /* Supprime les puces de la liste */
+    padding: 30px; /* Supprime le padding par défaut */
+    margin: 0px; /* Supprime la marge par défaut */
+    box-shadow: none; /* Ombre douce */
+    display: flex; /* Définit un système de grille */
+    flex-direction: column;
+    justify-content: right;
+    align-items: center;
+    width: 100vw;
+    height: 60vh;
+
+
+
+
+  }
+
+  .cartItem .removeButton {
+    position: absolute;
+    top: -10px;
+    left: -5px;
+
+  
+  }
+  
+  .cartItem {
+    position: relative;
+    background-color: #f9f9f9;
+
+    border-radius: 12px;
+    margin-left: 0px;
+    padding: 0px;
+    min-height: 180px;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+  
+  }
+
+  /* Conteneur pour les boutons sous l'image */
+.cartItemActions {
+  display: flex;
+  flex-direction: row;
+  width: 30%;
+}
+/* Image du produit à gauche */
+.cartProduitImage {
+  width: 70%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-right: 0px;
+  margin: 0;
+  flex-direction: column;
+  padding: 0;
+}
+
+  .cartItemImage{
+    padding: 0;
+    margin: 0;
+    width: 150px;
+    height: auto;
+    display: block;
+  }
+  .cartItemTitreProduit{
+    font-size: 1.1rem;
+  }
+  .cartIteDetailEtAction{
+    display: flex;
+    margin: auto;
+    padding: auto;
+    flex-direction: row;
+    padding: 5px;
+    min-width: 250px;
+    width:auto
+
+  
+  }
+  .cartItemDetails{
+    display: flex;
+    flex-direction: column;
+    line-height: 0.8rem;
+    justify-content: flex-start;
+    padding-top: 15px;
+
+
+  }
+  .cartItemActions button {
+    gap: 0px;
+    padding: 3px;
+    font-size: 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0.25rem;
+    justify-content: left;
+    display:flex;
+    flex-direction: column;
+  
+  }
+
+  
+
+
+/* Référence du produit en couleur discrète */
+/* Référence du produit */
+
+
+
+/* Détails de la tarification */
+.QuantitePrix {
+  font-size: 0.8rem; /* Taille normale */
+  margin: 0;
+  padding: 0;
+}
+
+/* Total par produit */
+
+
+.Reference{
+  font-size: 0.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+
+}
+
+

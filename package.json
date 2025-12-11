@@ -1,0 +1,40 @@
+{
+  "name": "front",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3007",
+    "dev:turbo": "next dev -p 3007 --turbo",
+    "build": "next build",
+    "start": "next start -p 3007",
+    "lint": "next lint",
+    "clean": "rm -rf .next out .turbo",
+    "reinstall": "npm run clean && rm -rf node_modules package-lock.json && npm install"
+  },
+  "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
+    "@fortawesome/fontawesome-free": "^6.6.0",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.5.3",
+    "axios": "^1.12.2",
+    "font-awesome": "^4.7.0",
+    "framer-motion": "^12.23.22",
+    "lucide-react": "^0.545.0",
+    "next": "15.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-icons": "^5.5.0",
+    "sonner": "^2.0.7",
+    "stripe": "^20.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18",
+    "typescript": "^5"
+  }
+}

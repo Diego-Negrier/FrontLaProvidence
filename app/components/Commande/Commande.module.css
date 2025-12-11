@@ -1,0 +1,349 @@
+.commandeItem {
+    background-color:var(--color-background);
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+  }
+  .SectionCommandes{
+    max-height: 90vh; 
+    overflow: hidden;
+    min-height: 60vh;
+
+    overflow-y: auto;
+  }
+  .commandeItem p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  
+  .commandeItem p strong {
+    color: #333;
+  }
+  
+  .noCommandes {
+    text-align: center;
+    font-size: 1rem;
+  }
+  
+  .errorMessage {
+    color: var(--color-error);
+    text-align: center;
+    font-size: 1.1rem;
+  }
+  
+  .clientInfo {
+    margin-top: 30px;
+    padding: 15px;
+    background-color:var(--color-background);
+    border-radius: 8px;
+  }
+  
+  .clientInfo p {
+    color:var(--font-principa);
+    margin: 5px 0;
+    font-size: 0.95rem;
+  }
+  
+  .adresseInfo {
+    padding-left: 20px;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .commandeContainer {
+    width:95%;
+ 
+    position: relative;
+    margin: auto auto;
+    margin-top: 60px;
+    margin-bottom:  20px;
+    display: flex;
+    flex-direction: column;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  .commandeContainerNot {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #ff0000;
+    padding: 20px;
+    background-color: #f8d7da; /* Rouge clair pour l'arrière-plan */
+  }
+ 
+  .toggleButton {
+    background-color: var(--color-primary); /* Couleur de fond */
+    color: #fff;                          /* Couleur du texte */
+    border: none;                          /* Pas de bordure */
+    border-radius: 50%;                    /* Forme circulaire */
+    font-size: 20px;                       /* Taille de l'icône */
+    width: 40px;                           /* Largeur du bouton */
+    height: 40px;                          /* Hauteur du bouton */
+    display: flex;                         /* Utilisation de Flexbox */
+    justify-content: center;               /* Centrer horizontalement */
+    align-items: center;   
+    padding: 0;
+    margin: auto;                /* Centrer verticalement */
+    cursor: pointer;                      /* Curseur en forme de main */
+    transition: background-color 0.3s ease; /* Transition fluide pour l'effet hover */
+  }
+  
+  .toggleButton:hover {
+    background-color: var(--color-secondary); /* Changer de couleur au survol */
+  }
+  
+  /* Optionnel : Si vous souhaitez augmenter la taille de l'icône au survol */
+  .toggleButton:hover i {
+    font-size: 22px; /* Agrandir légèrement l'icône lors du survol */
+    
+  }
+  
+  /* Vous pouvez aussi styliser l'icône directement si nécessaire */
+  .toggleButton i {
+    font-size: 20px; /* Taille par défaut de l'icône */
+  }
+
+
+
+
+  .volet {
+    margin-top: 15px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    background-color: var(--color-background);
+    max-height: 50vh;
+    overflow: hidden;
+    overflow-y: auto;
+
+  }
+  .volet ul{
+    width: 100%;
+  }
+  .produit {
+    margin-bottom: 20px;
+    list-style-type: none;
+    display: flex;
+    margin: auto;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-surface);
+
+  }
+  
+
+  
+  .produitImage {
+    width: 150px;  /* Taille fixe de l'image */
+    height: 150px;  /* Taille fixe de l'image */
+    object-fit: cover;  /* Couvre toute la zone sans déformation */
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    justify-content: center;
+  }
+
+  .produitCommande{
+  width:20%;
+  margin: 0;
+  padding: 0;
+  
+
+  }
+  .ProduitChronologie{
+    width: 100vw;
+    padding: 0;
+    margin: 0;
+    
+
+  }
+  .timelineContainer {
+    display: flex;
+    align-items: center; /* Centrer verticalement les éléments */
+    vertical-align: middle;
+    width: 100%; /* Prendre toute la largeur disponible */
+  }
+  
+  .timelineItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 100%; /* Prendre toute la largeur disponible */
+    text-align: center;
+    height: 50px;
+  }
+  
+  .timelineDot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var( --font-accentuation);
+    transition: background-color 0.3s ease;
+    border: 2px solid var( --font-accentuation);
+    z-index: 2; /* Les points seront au-dessus de la ligne */
+  }
+  
+  .timelineDot.completed {
+    background-color: var(--color-secondary); /* Changer la couleur du point quand le statut est complété */
+    color: var(--font-seconde);
+    border: 2px solid var(--font-seconde)
+
+  }
+  
+  .timelineLine {
+    position: absolute;
+    top: 20%; /* Centrer verticalement la ligne par rapport aux points */
+    right: -50%;
+    height: 3px;
+    background-color: var(--color-text); /* Couleur des labels complétés */
+    z-index: 1;
+    width: 100%; /* La ligne occupe toute la largeur entre le premier et le dernier statut */
+  }
+  
+  .timelineLine.completedLine {
+    background-color: var(--color-secondary); /* Couleur des labels complétés */
+  }
+  
+  /* La ligne doit se terminer après le dernier statut "Terminée" */
+  .timelineItem:last-child .timelineLine {
+    display: none; /* Cacher la ligne après le dernier statut */
+  }
+  
+  .timelineLabel {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var( --font-principal);
+    transition: color 0.3s ease;
+  }
+  
+  .timelineLabel.completedLabel {
+    color: var(--color-secondary); /* Couleur des labels complétés */
+  }
+
+
+
+/* Mode vertical pour mobile */
+@media (max-width:800px) {
+  .commandeContainer{
+    width: 100vw;
+    padding: 0px;
+    border-radius: none;
+    margin: auto;
+
+  }
+  .timelineContainer {
+    display: flex;
+    align-items: center; /* Centrer verticalement les éléments */
+    vertical-align: middle;
+    width: 100%; /* Prendre toute la largeur disponible */
+   
+  }
+  .commandeItem {
+    width: 95vw;
+    border: none;
+    justify-content: center;
+    margin: auto;
+    margin-bottom: 10px;
+    border-radius: none;
+
+  }
+  .timelineItem {
+    text-align: center;
+  }
+
+  .timelineDot {
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    
+    border-radius: 50%;
+    
+    background-color: var( --font-accentuation);
+    transition: background-color 0.3s ease;
+    border: 2px solid var( --font-accentuation);
+    z-index: 2; /* Les points seront au-dessus de la ligne */
+
+  }
+
+  .timelineLine {
+    position: absolute;
+    top: 10%; /* Centrer verticalement la ligne par rapport aux points */
+    height: 1.2px;
+    background-color: var(--color-text); /* Couleur des labels complétés */
+    z-index: 1;
+    width: 100% /* La ligne occupe toute la largeur entre le premier et le dernier statut */
+  
+  }
+  
+
+  .timelineItem:last-child .timelineLine {
+    display: none;
+  }
+
+  .timelineLabel {
+    margin-top: 0;
+    text-align: left; /* Texte aligné à gauche */
+    transform: rotate(-55deg);
+    top:15px;
+    position: relative;
+
+  }
+  .produitImage {
+    width: 90%;  /* Taille fixe de l'image */
+    height: auto;  /* Taille fixe de l'image */
+    object-fit: cover;  /* Couvre toute la zone sans déformation */
+    border: none;
+    border-radius: 5px;
+    justify-content: center;
+    margin: auto;
+    align-items: center;
+    padding: 20px;
+  }
+  .produit {
+    margin-bottom: 10px;
+    list-style-type: none;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    margin: 0;
+    padding: auto;
+    justify-content: center;
+    margin: auto;
+    align-items: center;
+  }
+  
+  .produitCommande{
+    width:100%;
+    margin: 0;
+    text-align: center;
+    padding: 0;
+    justify-content: center;
+    margin: auto;
+    align-items: center;
+    margin-bottom: 5px;
+  
+    }
+    .ProduitChronologie{
+      width: 90vw;
+      padding: auto;
+      justify-content: center;
+      margin: auto;
+      align-items: center;
+      display: flex;
+      
+  
+    }
+ .volet{
+  display: flex;
+  flex-direction: column;
+ }
+
+
+
+ 
+}

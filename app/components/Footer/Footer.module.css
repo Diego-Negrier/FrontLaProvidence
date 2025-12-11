@@ -1,0 +1,15 @@
+/* Footer.module.css */
+
+
+
+.footer a {
+    text-decoration: none; /* Supprime le soulignement des liens */
+}
+
+.footer a:hover {
+    text-decoration: underline; /* Ajoute un soulignement au survol */
+}
+
+.footer nav {
+    margin-top: 0.5rem; /* Espacement entre le texte et la navigation */
+}
