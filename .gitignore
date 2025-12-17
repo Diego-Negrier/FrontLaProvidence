@@ -31,3 +31,9 @@ out/
 .cache/
 dist/
 npm-debug.log
+.next/
+*.glb
+public/models/**/*.glb
+.next/
+*.glb
+public/models/**/*.glb
