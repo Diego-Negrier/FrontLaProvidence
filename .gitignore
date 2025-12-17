@@ -27,3 +27,7 @@ yarn-error.log*
 .vscode/
 .idea/
 .next/
+out/
+.cache/
+dist/
+npm-debug.log
