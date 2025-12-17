@@ -1,4 +1,10 @@
 {
+  "app/immersion/page.tsx -> @/app/components/Village3D/Scene3DClean": {
+    "id": "app/immersion/page.tsx -> @/app/components/Village3D/Scene3DClean",
+    "files": [
+      "static/chunks/_app-pages-browser_app_components_Village3D_Scene3DClean_tsx.js"
+    ]
+  },
   "app/page.tsx -> ./components/MapComponent": {
     "id": "app/page.tsx -> ./components/MapComponent",
     "files": [

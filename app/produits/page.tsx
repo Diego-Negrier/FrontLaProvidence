@@ -132,19 +132,44 @@ export default function ProduitsPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: theme.colors.background }}>
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Header moderne avec espacement */}
-        <div className="mb-16 text-center">
-          <div className="inline-block mb-6 p-4 rounded-2xl" style={{ backgroundColor: theme.colors.primary + '10' }}>
-            <span className="text-5xl">🛒</span>
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: theme.colors.background }}>
+      {/* Effet de fond futuriste avec gradients animés */}
+      <div
+        className="absolute inset-0 opacity-30 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 20% 50%, ${theme.colors.primary}15 0%, transparent 50%),
+                       radial-gradient(circle at 80% 80%, ${theme.colors.secondary}15 0%, transparent 50%),
+                       radial-gradient(circle at 40% 90%, ${theme.colors.accent}10 0%, transparent 50%)`,
+        }}
+      />
+
+      <div className="container py-12 relative z-10">
+        {/* Header futuriste avec glassmorphism */}
+        <div className="mb-16 text-center relative">
+          {/* Effet de glow derrière l'icône */}
+          <div
+            className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-32 rounded-full blur-3xl opacity-50"
+            style={{ backgroundColor: theme.colors.primary }}
+          />
+
+          <div
+            className="inline-block mb-6 p-6 rounded-3xl backdrop-blur-xl relative"
+            style={{
+              backgroundColor: theme.colors.cardBg + 'CC',
+              boxShadow: `0 8px 32px ${theme.colors.primary}20, inset 0 1px 0 rgba(255,255,255,0.1)`,
+              border: `1px solid ${theme.colors.border}80`
+            }}
+          >
+            <span className="text-6xl">🛒</span>
           </div>
+
           <h1
-            className="text-5xl md:text-6xl font-bold mb-6"
+            className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text"
             style={{
               color: theme.colors.text,
               fontFamily: theme.fonts.heading,
-              letterSpacing: '-0.02em'
+              letterSpacing: '-0.02em',
+              textShadow: `0 2px 20px ${theme.colors.primary}30`
             }}
           >
             Notre Catalogue
@@ -152,6 +177,17 @@ export default function ProduitsPage() {
           <p className="text-xl max-w-2xl mx-auto" style={{ color: theme.colors.textSecondary, lineHeight: '1.6' }}>
             Découvrez tous nos produits frais et de qualité
           </p>
+
+          {/* Ligne séparatrice futuriste */}
+          <div className="mt-8 flex items-center justify-center gap-4">
+            <div className="h-px flex-1 max-w-xs" style={{
+              background: `linear-gradient(to right, transparent, ${theme.colors.primary}40, transparent)`
+            }} />
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.colors.primary }} />
+            <div className="h-px flex-1 max-w-xs" style={{
+              background: `linear-gradient(to right, transparent, ${theme.colors.primary}40, transparent)`
+            }} />
+          </div>
         </div>
 
         {loading ? (
@@ -187,53 +223,85 @@ export default function ProduitsPage() {
           </div>
         ) : (
           <div className="flex gap-6">
-            {/* Sidebar des catégories */}
+            {/* Sidebar des catégories avec glassmorphism */}
             <aside
-              className={`transition-all duration-300 ${isSidebarOpen ? 'w-80' : 'w-0 overflow-hidden'}`}
+              className={`transition-all duration-500 ease-in-out ${isSidebarOpen ? 'w-80 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}
               style={{
                 flexShrink: 0,
               }}
             >
               <div
-                className="sticky top-24 rounded-3xl overflow-hidden"
+                className="sticky top-24 rounded-3xl overflow-hidden backdrop-blur-xl"
                 style={{
-                  backgroundColor: theme.colors.cardBg,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                  border: `1px solid ${theme.colors.border}`,
+                  backgroundColor: theme.colors.cardBg + 'E6',
+                  boxShadow: `0 8px 32px ${theme.colors.primary}10, inset 0 1px 0 rgba(255,255,255,0.05)`,
+                  border: `1px solid ${theme.colors.border}60`,
                 }}
               >
-                {/* Header minimaliste */}
-                <div className="p-6 pb-4" style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2
-                      className="text-lg font-bold"
-                      style={{ color: theme.colors.text, fontFamily: theme.fonts.heading }}
-                    >
-                      Catégories
-                    </h2>
+                {/* Header avec dégradé subtil */}
+                <div
+                  className="p-6 pb-4 relative"
+                  style={{
+                    borderBottom: `1px solid ${theme.colors.border}40`,
+                    background: `linear-gradient(135deg, ${theme.colors.primary}08 0%, transparent 100%)`
+                  }}
+                >
+                  {/* Accent ligne supérieure */}
+                  <div
+                    className="absolute top-0 left-6 right-6 h-0.5 rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, transparent, ${theme.colors.primary}, transparent)`
+                    }}
+                  />
+
+                  <div className="flex items-center justify-between mb-4 mt-2">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-1.5 h-6 rounded-full"
+                        style={{
+                          background: `linear-gradient(180deg, ${theme.colors.primary}, ${theme.colors.secondary})`
+                        }}
+                      />
+                      <h2
+                        className="text-lg font-bold"
+                        style={{ color: theme.colors.text, fontFamily: theme.fonts.heading }}
+                      >
+                        Catégories
+                      </h2>
+                    </div>
                     <button
                       onClick={() => setIsSidebarOpen(false)}
-                      className="md:hidden p-2 rounded-xl transition-all hover:bg-opacity-10"
+                      className="md:hidden p-2 rounded-xl transition-all hover:bg-opacity-10 hover:rotate-90"
                       style={{
                         color: theme.colors.textSecondary,
+                        transition: 'all 0.3s ease'
                       }}
                     >
                       <FaTimes size={18} />
                     </button>
                   </div>
 
-                  {/* Bouton reset - minimaliste */}
+                  {/* Bouton reset avec effet futuriste */}
                   {(selectedCategoryId || selectedSubCategoryId || selectedSubSubCategoryId || searchQuery) && (
                     <button
                       onClick={clearFilters}
-                      className="w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                      className="w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:scale-[1.02] hover:shadow-lg group relative overflow-hidden"
                       style={{
-                        backgroundColor: theme.colors.surface,
+                        backgroundColor: theme.colors.surface + 'CC',
                         color: theme.colors.textSecondary,
-                        border: `1px solid ${theme.colors.border}`,
+                        border: `1px solid ${theme.colors.border}60`,
                       }}
                     >
-                      ✕ Tout effacer
+                      {/* Effet de shine au hover */}
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                        style={{
+                          background: `linear-gradient(90deg, transparent, ${theme.colors.primary}15, transparent)`,
+                          transform: 'translateX(-100%)',
+                          animation: 'shine 1.5s infinite'
+                        }}
+                      />
+                      <span className="relative z-10">✕ Tout effacer</span>
                     </button>
                   )}
                 </div>
@@ -366,36 +434,67 @@ export default function ProduitsPage() {
 
             {/* Contenu principal */}
             <main className="flex-1 min-w-0">
-              {/* Barre de recherche et toggle sidebar */}
+              {/* Barre de recherche et toggle sidebar avec effets futuristes */}
               <div className="mb-8 flex gap-4 items-center">
                 {!isSidebarOpen && (
                   <button
                     onClick={() => setIsSidebarOpen(true)}
-                    className="px-6 py-4 rounded-2xl font-semibold transition-all hover:scale-105 hover:shadow-lg"
+                    className="px-6 py-4 rounded-2xl font-semibold transition-all hover:scale-105 hover:shadow-2xl backdrop-blur-sm group relative overflow-hidden"
                     style={{
                       backgroundColor: theme.colors.primary,
                       color: getContrastColor(theme.colors.primary),
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      boxShadow: `0 8px 24px ${theme.colors.primary}40`
                     }}
                   >
-                    📂 Catégories
+                    {/* Effet de shine */}
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                      style={{
+                        background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)`,
+                        transform: 'skewX(-20deg)',
+                        animation: 'shimmer 2s infinite'
+                      }}
+                    />
+                    <span className="relative z-10 flex items-center gap-2">
+                      📂 Catégories
+                    </span>
                   </button>
                 )}
-                <div className="flex-1 relative">
+                <div className="flex-1 relative group">
+                  {/* Effet de glow au focus */}
+                  <div
+                    className="absolute -inset-0.5 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity duration-500"
+                    style={{
+                      background: `linear-gradient(135deg, ${theme.colors.primary}40, ${theme.colors.secondary}40)`
+                    }}
+                  />
                   <input
                     type="text"
                     placeholder="Rechercher un produit..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-6 py-4 rounded-2xl text-lg transition-all focus:outline-none focus:ring-2"
+                    className="w-full px-6 py-4 rounded-2xl text-lg transition-all focus:outline-none backdrop-blur-sm relative"
                     style={{
-                      backgroundColor: theme.colors.surface,
-                      border: `2px solid ${theme.colors.border}`,
+                      backgroundColor: theme.colors.surface + 'E6',
+                      border: `2px solid ${theme.colors.border}60`,
                       color: theme.colors.text,
-                      boxShadow: '0 4px 6px rgba(0,0,0,0.02)'
+                      boxShadow: `0 4px 16px ${theme.colors.primary}05, inset 0 1px 0 rgba(255,255,255,0.05)`
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = theme.colors.primary + '80';
+                      e.currentTarget.style.boxShadow = `0 8px 24px ${theme.colors.primary}15, inset 0 1px 0 rgba(255,255,255,0.1)`;
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = theme.colors.border + '60';
+                      e.currentTarget.style.boxShadow = `0 4px 16px ${theme.colors.primary}05, inset 0 1px 0 rgba(255,255,255,0.05)`;
                     }}
                   />
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                  <div
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-xl backdrop-blur-sm transition-all"
+                    style={{
+                      backgroundColor: theme.colors.primary + '15'
+                    }}
+                  >
                     <span className="text-xl">🔍</span>
                   </div>
                 </div>
@@ -424,13 +523,29 @@ export default function ProduitsPage() {
                       <Link
                         key={produit.pk}
                         href={`/produit/${produit.numero_unique}`}
-                        className="group block rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
+                        className="group block rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] backdrop-blur-sm relative"
                         style={{
-                          backgroundColor: theme.colors.cardBg,
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                          border: `1px solid ${theme.colors.border}`,
+                          backgroundColor: theme.colors.cardBg + 'F2',
+                          boxShadow: `0 4px 16px ${theme.colors.primary}08, 0 2px 4px rgba(0,0,0,0.02)`,
+                          border: `1px solid ${theme.colors.border}60`,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.boxShadow = `0 12px 40px ${theme.colors.primary}20, 0 4px 12px rgba(0,0,0,0.08)`;
+                          e.currentTarget.style.borderColor = theme.colors.primary + '40';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.boxShadow = `0 4px 16px ${theme.colors.primary}08, 0 2px 4px rgba(0,0,0,0.02)`;
+                          e.currentTarget.style.borderColor = theme.colors.border + '60';
                         }}
                       >
+                        {/* Effet de gradient au hover sur le bord */}
+                        <div
+                          className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                          style={{
+                            background: `linear-gradient(135deg, ${theme.colors.primary}10, ${theme.colors.secondary}10)`,
+                            zIndex: 0
+                          }}
+                        />
                         {/* Image avec badges */}
                         <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: theme.colors.background }}>
                           {/* Badge icône dynamique */}

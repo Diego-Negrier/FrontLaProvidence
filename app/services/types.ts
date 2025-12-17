@@ -71,17 +71,22 @@ export interface PasswordUpdateData {
 export interface Produit {
   id: number;
   pk: number; // Alias pour compatibilité
+  pk_produit?: number; // Alias pour compatibilité
   fournisseur_nom: string;
   numero_unique: string;
   code_barre: string | null;
   reference_interne: string;
   nom: string;
+  nom_produit?: string; // Alias pour compatibilité
   slug: string;
   description_courte: string;
+  description_produit?: string; // Alias pour compatibilité
   description_longue: string;
   image_principale: string | null;
+  image_produit?: string | null; // Alias pour compatibilité
   icone_produit?: string; // Icône intelligente calculée par le backend
   prix_ht: string;
+  prix_produit?: number; // Alias pour compatibilité
   tva: string;
   stock_actuel: number;
   stock_minimum: number;
@@ -105,6 +110,7 @@ export interface Produit {
   souscategorie: number;
   soussouscategorie: number | null;
   fournisseur: number;
+  pk_fournisseur?: number; // Alias pour compatibilité
 }
 
 export interface SousSousCategorie {

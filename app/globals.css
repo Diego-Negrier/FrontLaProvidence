@@ -169,11 +169,7 @@ button:disabled {
 }
 
 /* Classes utilitaires personnalisées */
-.container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
+/* .container is now configured in tailwind.config.js */
 
 .card {
   background-color: var(--color-cardBg);
@@ -401,6 +397,43 @@ button:disabled {
   }
   75% {
     transform: scale(1.2) rotate(-5deg);
+  }
+}
+
+/* Animations futuristes */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-20deg);
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
   }
 }
 

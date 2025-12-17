@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useTheme } from '@/app/contexts/ThemeContext';
-import { FaShoppingCart, FaUser, FaBars, FaTimes, FaStore, FaTruck, FaHome, FaClipboardList, FaSignOutAlt } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaBars, FaTimes, FaStore, FaTruck, FaHome, FaClipboardList, FaSignOutAlt, FaCube } from 'react-icons/fa';
 
 export default function Header() {
   const pathname = usePathname();
@@ -49,6 +49,7 @@ export default function Header() {
     { href: '/', label: 'Accueil', icon: FaHome },
     { href: '/produits', label: 'Magasin', icon: FaStore },
     { href: '/fournisseurs', label: 'Fournisseurs', icon: FaTruck },
+    { href: '/immersion', label: 'Village 3D', icon: FaCube },
   ];
 
   // Navigation privée (utilisateurs connectés uniquement)
@@ -72,7 +73,7 @@ export default function Header() {
       backdropFilter: 'blur(10px)'
     }}>
       <div style={{
-        maxWidth: '1400px',
+        maxWidth: '1280px',
         margin: '0 auto',
         padding: '0 1rem'
       }}>
