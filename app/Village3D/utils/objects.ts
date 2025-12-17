@@ -1,10 +1,138 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { VILLAGE_SHOPS } from '../../config/villageConfig';
+import { VILLAGE_SHOPS, VILLAGE_CATEGORIES, type CategoryConfig } from '../../config/villageConfig';
 import type { Fournisseur, Produit } from '../../services/types';
 import type { Shop } from '../../types/village';
 
-// Fonction pour créer un stand manuel procédural
+// Fonction pour créer un stand de catégorie avec emoji
+function createCategoryStall(
+  scene: THREE.Scene,
+  x: number,
+  z: number,
+  rotation: number,
+  category: CategoryConfig
+) {
+  const stallGroup = new THREE.Group();
+
+  // Couleurs en fonction de la catégorie
+  const colors = [
+    0x8b4513, // Brun
+    0x2d5016, // Vert foncé
+    0xdaa520, // Or
+    0x4a90e2, // Bleu
+    0xe74c3c, // Rouge
+    0x9b59b6, // Violet
+    0xf39c12, // Orange
+    0x1abc9c, // Turquoise
+    0x34495e, // Gris
+    0xe67e22  // Orange foncé
+  ];
+
+  const woodColor = colors[category.id % colors.length] || 0x8b4513;
+  const canvasColor = 0xf4e4c1;
+
+  // Poteaux d'angle plus larges pour un stand de catégorie
+  const postGeometry = new THREE.BoxGeometry(0.15, 3, 0.15);
+  const postMaterial = new THREE.MeshStandardMaterial({ color: woodColor, roughness: 0.8 });
+
+  const positions = [
+    [-1.5, 1.5, -0.75],
+    [1.5, 1.5, -0.75],
+    [-1.5, 1.5, 0.75],
+    [1.5, 1.5, 0.75]
+  ];
+
+  positions.forEach(([px, py, pz]) => {
+    const post = new THREE.Mesh(postGeometry, postMaterial);
+    post.position.set(px, py, pz);
+    post.castShadow = true;
+    stallGroup.add(post);
+  });
+
+  // Toit en toile plus grand
+  const roofGeometry = new THREE.BoxGeometry(3.5, 0.15, 2);
+  const roofMaterial = new THREE.MeshStandardMaterial({ color: canvasColor, roughness: 0.9 });
+  const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+  roof.position.set(0, 3, 0);
+  roof.castShadow = true;
+  stallGroup.add(roof);
+
+  // Comptoir
+  const counterGeometry = new THREE.BoxGeometry(3, 0.15, 1.2);
+  const counterMaterial = new THREE.MeshStandardMaterial({ color: woodColor, roughness: 0.7 });
+  const counter = new THREE.Mesh(counterGeometry, counterMaterial);
+  counter.position.set(0, 1, 0.4);
+  counter.castShadow = true;
+  counter.receiveShadow = true;
+  stallGroup.add(counter);
+
+  // Support du comptoir
+  const supportGeometry = new THREE.BoxGeometry(0.15, 1, 0.15);
+  [-1.2, 0, 1.2].forEach(px => {
+    const support = new THREE.Mesh(supportGeometry, postMaterial);
+    support.position.set(px, 0.5, 0.4);
+    support.castShadow = true;
+    stallGroup.add(support);
+  });
+
+  // Enseigne avec emoji et nom de catégorie
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    canvas.width = 1024;
+    canvas.height = 256;
+
+    // Fond blanc
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Emoji
+    ctx.font = 'bold 100px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(category.emoji, 150, canvas.height / 2);
+
+    // Nom de la catégorie
+    ctx.fillStyle = '#2d1810';
+    ctx.font = 'bold 50px Arial';
+    ctx.fillText(category.nom, 600, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const signGeometry = new THREE.PlaneGeometry(3.5, 0.9);
+    const signMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const sign = new THREE.Mesh(signGeometry, signMaterial);
+    sign.position.set(0, 3.5, 0);
+    stallGroup.add(sign);
+  }
+
+  // Afficher quelques icônes sur le comptoir (représentant les sous-catégories)
+  const subCatCount = Math.min(category.sousCategories.length, 5);
+  for (let i = 0; i < subCatCount; i++) {
+    const itemGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+    const itemMaterial = new THREE.MeshStandardMaterial({
+      color: colors[(category.id + i) % colors.length],
+      roughness: 0.6
+    });
+    const item = new THREE.Mesh(itemGeometry, itemMaterial);
+    item.position.set((i - subCatCount / 2) * 0.6, 1.3, 0.4);
+    item.castShadow = true;
+    stallGroup.add(item);
+  }
+
+  stallGroup.position.set(x, 0, z);
+  stallGroup.rotation.y = rotation;
+
+  // Donner un nom au groupe pour le debugging
+  stallGroup.name = `CategoryStall_${category.id}`;
+
+  scene.add(stallGroup);
+
+  console.log(`[createCategoryStall] Stand créé: ${category.emoji} ${category.nom}, children:`, stallGroup.children.length);
+
+  return stallGroup;
+}
+
+// Fonction pour créer un stand manuel procédural (ancienne version)
 function createProceduralStall(scene: THREE.Scene, x: number, z: number, rotation: number, name: string, productCount: number) {
   const stallGroup = new THREE.Group();
 
@@ -494,6 +622,176 @@ function mapFournisseursToShops(fournisseurs: Fournisseur[], produits: Produit[]
   });
 }
 
+// Fonction pour créer un stand de sous-catégorie
+function createSubCategoryStall(
+  scene: THREE.Scene,
+  x: number,
+  z: number,
+  rotation: number,
+  subCategory: any,
+  color: number
+) {
+  const stallGroup = new THREE.Group();
+
+  const woodColor = color;
+  const canvasColor = 0xf4e4c1;
+
+  // Poteaux d'angle (plus petits pour les sous-catégories)
+  const postGeometry = new THREE.BoxGeometry(0.12, 2.5, 0.12);
+  const postMaterial = new THREE.MeshStandardMaterial({ color: woodColor, roughness: 0.8 });
+
+  const positions = [
+    [-1, 1.25, -0.5],
+    [1, 1.25, -0.5],
+    [-1, 1.25, 0.5],
+    [1, 1.25, 0.5]
+  ];
+
+  positions.forEach(([px, py, pz]) => {
+    const post = new THREE.Mesh(postGeometry, postMaterial);
+    post.position.set(px, py, pz);
+    post.castShadow = true;
+    stallGroup.add(post);
+  });
+
+  // Toit en toile
+  const roofGeometry = new THREE.BoxGeometry(2.5, 0.12, 1.5);
+  const roofMaterial = new THREE.MeshStandardMaterial({ color: canvasColor, roughness: 0.9 });
+  const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+  roof.position.set(0, 2.5, 0);
+  roof.castShadow = true;
+  stallGroup.add(roof);
+
+  // Comptoir
+  const counterGeometry = new THREE.BoxGeometry(2.2, 0.12, 0.9);
+  const counterMaterial = new THREE.MeshStandardMaterial({ color: woodColor, roughness: 0.7 });
+  const counter = new THREE.Mesh(counterGeometry, counterMaterial);
+  counter.position.set(0, 0.9, 0.3);
+  counter.castShadow = true;
+  counter.receiveShadow = true;
+  stallGroup.add(counter);
+
+  // Support du comptoir
+  const supportGeometry = new THREE.BoxGeometry(0.12, 0.9, 0.12);
+  [-0.9, 0, 0.9].forEach(px => {
+    const support = new THREE.Mesh(supportGeometry, postMaterial);
+    support.position.set(px, 0.45, 0.3);
+    support.castShadow = true;
+    stallGroup.add(support);
+  });
+
+  // Enseigne avec emoji et nom
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    canvas.width = 1024;
+    canvas.height = 256;
+
+    // Fond blanc
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Emoji
+    ctx.font = 'bold 100px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(subCategory.emoji, 150, canvas.height / 2);
+
+    // Nom de la sous-catégorie
+    ctx.fillStyle = '#2d1810';
+    ctx.font = 'bold 45px Arial';
+    ctx.fillText(subCategory.nom, 600, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const signGeometry = new THREE.PlaneGeometry(2.5, 0.65);
+    const signMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const sign = new THREE.Mesh(signGeometry, signMaterial);
+    sign.position.set(0, 2.9, 0);
+    stallGroup.add(sign);
+  }
+
+  // Produits sur le comptoir (cubes colorés)
+  for (let i = 0; i < 3; i++) {
+    const productGeometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
+    const productMaterial = new THREE.MeshStandardMaterial({
+      color: i === 0 ? 0xdaa520 : i === 1 ? 0xff6347 : 0x90ee90,
+      roughness: 0.6
+    });
+    const product = new THREE.Mesh(productGeometry, productMaterial);
+    product.position.set((i - 1) * 0.5, 1.15, 0.3);
+    product.castShadow = true;
+    stallGroup.add(product);
+  }
+
+  stallGroup.position.set(x, 0, z);
+  stallGroup.rotation.y = rotation;
+  stallGroup.name = `SubCategoryStall_${subCategory.id}`;
+
+  scene.add(stallGroup);
+  return stallGroup;
+}
+
+// Fonction pour créer les stands des catégories principales en arc de cercle
+export function createCategoryStalls(scene: THREE.Scene) {
+  console.log('[Village3D] Création des stands de catégories en arc de cercle');
+
+  const categories = VILLAGE_CATEGORIES;
+  const categoryColors = [
+    0x8b4513, 0x2d5016, 0xdaa520, 0x4a90e2, 0xe74c3c,
+    0x9b59b6, 0xf39c12, 0x1abc9c, 0x34495e, 0xe67e22
+  ];
+
+  // Configuration de l'arc de cercle - SEULEMENT 10 CATÉGORIES
+  const radius = 25; // Rayon
+  const arcAngle = Math.PI; // 180 degrés (demi-cercle)
+  const startAngle = -arcAngle / 2; // Centrer l'arc à -90°
+
+  categories.forEach((category, index) => {
+    // Calculer l'angle pour ce stand
+    const angle = startAngle + (index / (categories.length - 1)) * arcAngle;
+
+    // Calculer la position en coordonnées polaires
+    const x = Math.sin(angle) * radius;
+    const z = -Math.cos(angle) * radius;
+
+    // Rotation pour que le stand face vers le centre (0, 0, 0)
+    const rotation = angle + Math.PI; // +180° pour faire face au centre
+
+    const color = categoryColors[category.id % categoryColors.length];
+
+    try {
+      const stallGroup = createSubCategoryStall(
+        scene,
+        x,
+        z,
+        rotation,
+        category,
+        color
+      );
+
+      // IMPORTANT: Ajouter userData au GROUP et à tous ses enfants
+      const userData = {
+        categoryId: category.id,
+        category: category,
+        type: 'category'
+      };
+
+      stallGroup.userData = userData;
+
+      // Propager userData à tous les enfants pour faciliter la détection
+      stallGroup.traverse((child) => {
+        child.userData = userData;
+      });
+
+      console.log(`[Village3D] ✅ Stand créé: ${category.emoji} ${category.nom} à (${x.toFixed(1)}, ${z.toFixed(1)}) - ${(angle * 180 / Math.PI).toFixed(0)}°`);
+    } catch (error) {
+      console.error(`Erreur lors de la création du stand ${category.nom}:`, error);
+    }
+  });
+
+  console.log(`[Village3D] ✅ ${categories.length} stands de catégories créés en arc de cercle (rayon: ${radius})`);
+}
+
 export async function placeObjects(
   scene: THREE.Scene,
   textures: { texPave: THREE.Texture },
@@ -504,6 +802,9 @@ export async function placeObjects(
 
   // Créer le sol
   createGround(scene, textures.texPave);
+
+  // Créer les stands de catégories alignés en ligne
+  createCategoryStalls(scene);
 
   // Charger l'église
   try {
@@ -518,69 +819,11 @@ export async function placeObjects(
     console.error('Erreur lors du chargement de l\'église:', error);
   }
 
-  // Charger les maisons
-  const maisonPositions = [
-    { x: -22, z: -10, rotation: 0 },
-    { x: 22, z: -10, rotation: Math.PI },
-    { x: -26, z: 12, rotation: Math.PI / 4 },
-    { x: 26, z: 12, rotation: -Math.PI / 4 }
-  ];
+  // Maisons supprimées pour l'instant (focus sur les stands)
 
-  for (const pos of maisonPositions) {
-    try {
-      await loadGLBModel(
-        scene,
-        '/models/3houses.glb',
-        { x: pos.x, y: 0, z: pos.z },
-        0.3,
-        pos.rotation
-      );
-    } catch (error) {
-      console.error(`Erreur lors du chargement d'une maison à (${pos.x}, ${pos.z}):`, error);
-    }
-  }
-
-  // Mapper les fournisseurs aux shops
-  const shopsAvecFournisseurs = mapFournisseursToShops(fournisseurs, produits);
-
-  // Créer les étals de marché procéduraux avec les données des fournisseurs
-  console.log('[Village3D] Création de', shopsAvecFournisseurs.length, 'shops procéduraux');
-
-  // Position initiale du client/caméra (point de vue par défaut)
-  const clientX = 0;
-  const clientZ = 15; // Position de départ de la caméra
-
-  for (const shop of shopsAvecFournisseurs) {
-    try {
-      // Calculer la rotation pour que le stand soit orienté VERS LE CLIENT
-      // Le stand regarde vers la position initiale de la caméra
-      const dx = clientX - shop.position[0];
-      const dz = clientZ - shop.position[2];
-      const rotation = Math.atan2(dx, dz);
-
-      // Créer un stand procédural
-      const stallGroup = createProceduralStall(
-        scene,
-        shop.position[0],
-        shop.position[2],
-        rotation,
-        shop.nom,
-        shop.produits.length
-      );
-
-      // Ajouter les métadonnées pour l'interaction
-      (stallGroup as any).userData = {
-        shopId: shop.id,
-        nom: shop.nom,
-        produits: shop.produits,
-        artisan: shop.artisan
-      };
-
-      console.log(`[Village3D] Shop créé: ${shop.nom} (orienté vers client) avec ${shop.produits.length} produits`);
-    } catch (error) {
-      console.error(`Erreur lors de la création du shop ${shop.nom}:`, error);
-    }
-  }
+  // NE PLUS CRÉER les anciens stands de fournisseurs
+  // On garde uniquement les stands de catégories
+  console.log('[Village3D] Stands de catégories créés, anciens stands ignorés');
 
   // Créer les champs autour du village
   createWheatField(scene, -80, -40, 40, 30);

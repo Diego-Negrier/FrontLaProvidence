@@ -10,7 +10,8 @@ export function initScene(container: HTMLElement) {
     0.1,
     2000
   );
-  camera.position.set(0, 3, 15);
+  // Positionner la caméra au centre de l'arc de cercle
+  camera.position.set(0, 5, 0);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -78,5 +79,18 @@ export function createOrbitControls(camera: THREE.PerspectiveCamera, renderer: T
   const orbit = new OrbitControls(camera, renderer.domElement);
   orbit.enableDamping = true;
   orbit.enablePan = false;
+
+  // Limiter la rotation horizontale à 180° (de -90° à +90°)
+  orbit.minAzimuthAngle = -Math.PI / 2; // -90 degrés
+  orbit.maxAzimuthAngle = Math.PI / 2;  // +90 degrés
+
+  // Limiter la rotation verticale pour éviter de regarder en dessous
+  orbit.minPolarAngle = Math.PI / 6;    // 30 degrés (limite haute)
+  orbit.maxPolarAngle = Math.PI / 2.2;  // ~80 degrés (limite basse)
+
+  // Limiter le zoom
+  orbit.minDistance = 5;  // Distance minimale
+  orbit.maxDistance = 50; // Distance maximale
+
   return orbit;
 }
