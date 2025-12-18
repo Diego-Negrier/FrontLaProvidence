@@ -49,7 +49,7 @@ export default function Header() {
     { href: '/', label: 'Accueil', icon: FaHome },
     { href: '/produits', label: 'Magasin', icon: FaStore },
     { href: '/fournisseurs', label: 'Fournisseurs', icon: FaTruck },
-    { href: '/immersion', label: 'Village 3D', icon: FaCube },
+    { href: '/Village3D', label: 'Village 3D', icon: FaCube },
   ];
 
   // Navigation privée (utilisateurs connectés uniquement)

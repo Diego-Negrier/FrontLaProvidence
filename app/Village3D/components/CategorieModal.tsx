@@ -22,11 +22,25 @@ export default function CategorieModal({
   const [error, setError] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState<number | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategoryConfig | null>(null);
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
+
+  // Debug: afficher la catégorie reçue
+  useEffect(() => {
+    if (category) {
+      console.log('[CategorieModal] Catégorie reçue:', category);
+      console.log('[CategorieModal] Sous-catégories:', category.sousCategories);
+      console.log('[CategorieModal] Nombre de sous-catégories:', category.sousCategories?.length);
+      if (category.sousCategories && category.sousCategories.length > 0) {
+        console.log('[CategorieModal] Première sous-catégorie:', category.sousCategories[0]);
+      }
+    }
+  }, [category]);
 
   // Charger les produits quand une sous-catégorie est sélectionnée
   useEffect(() => {
     if (selectedSubCategory) {
       loadProduitsForSubCategory(selectedSubCategory.id);
+      setImageErrors(new Set()); // Réinitialiser les erreurs d'image
     }
   }, [selectedSubCategory]);
 
@@ -36,7 +50,11 @@ export default function CategorieModal({
       setError(null);
 
       // Charger les produits par sous-catégorie
-      const produitsData = await ProduitsService.getProductsByCategory(subCategoryId);
+      const produitsData = await ProduitsService.getProductsBySubCategory(subCategoryId);
+      console.log('[CategorieModal] Produits chargés:', produitsData);
+      console.log('[CategorieModal] Premier produit:', produitsData[0]);
+      console.log('[CategorieModal] icone_produit du premier produit:', produitsData[0]?.icone_produit);
+      console.log('[CategorieModal] Tous les champs du premier produit:', Object.keys(produitsData[0] || {}));
       setProduits(produitsData);
     } catch (err) {
       console.error('[CategorieModal] Erreur lors du chargement des produits:', err);
@@ -173,7 +191,7 @@ export default function CategorieModal({
         </p>
 
         {/* Affichage des sous-catégories */}
-        {!selectedSubCategory && (
+        {!selectedSubCategory && category.sousCategories && category.sousCategories.length > 0 ? (
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -229,7 +247,15 @@ export default function CategorieModal({
               </div>
             ))}
           </div>
-        )}
+        ) : !selectedSubCategory ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '3rem',
+            color: '#6b7280'
+          }}>
+            Aucune sous-catégorie disponible
+          </div>
+        ) : null}
 
         {/* Affichage des produits */}
         {selectedSubCategory && (
@@ -254,11 +280,71 @@ export default function CategorieModal({
               </div>
             ) : produits.length === 0 ? (
               <div style={{
-                textAlign: 'center',
-                padding: '3rem',
-                color: '#6b7280'
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4rem 2rem',
+                gap: '1.5rem'
               }}>
-                Aucun produit disponible dans cette catégorie
+                {/* Pancarte "Rupture de stock" */}
+                <div style={{
+                  backgroundColor: '#fef3c7',
+                  border: '4px solid #92400e',
+                  borderRadius: '12px',
+                  padding: '2rem 3rem',
+                  boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)',
+                  transform: 'rotate(-2deg)',
+                  position: 'relative'
+                }}>
+                  <div style={{
+                    fontSize: '4rem',
+                    marginBottom: '1rem',
+                    textAlign: 'center'
+                  }}>
+                    📦🚫
+                  </div>
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#92400e',
+                    textAlign: 'center',
+                    fontFamily: 'cursive',
+                    lineHeight: 1.3
+                  }}>
+                    Rupture de stock
+                  </div>
+                  <div style={{
+                    fontSize: '1rem',
+                    color: '#78350f',
+                    textAlign: 'center',
+                    marginTop: '0.5rem'
+                  }}>
+                    Plus de marchandise disponible
+                  </div>
+
+                  {/* Clou décoratif en haut */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '-10px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#78350f',
+                    borderRadius: '50%',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
+                  }} />
+                </div>
+
+                <p style={{
+                  fontSize: '0.95rem',
+                  color: '#9ca3af',
+                  textAlign: 'center',
+                  maxWidth: '400px'
+                }}>
+                  Le commerçant n'a pas encore approvisionné ce stand. Revenez plus tard ! 🛒
+                </p>
               </div>
             ) : (
               <div style={{
@@ -268,10 +354,13 @@ export default function CategorieModal({
               }}>
                 {produits.map((produit) => {
                   const produitId = produit.pk_produit || produit.pk;
-                  const produitNom = produit.nom_produit || produit.nom;
+                  const produitNom = produit.nom_produit || produit.nom || 'Produit sans nom';
                   const produitImage = produit.image_produit || produit.image_principale;
                   const produitDescription = produit.description_produit || produit.description_courte;
                   const produitPrix = produit.prix_produit || parseFloat(produit.prix_ht);
+                  const produitEmoji = produit.icone_produit || selectedSubCategory?.emoji || '📦';
+                  const hasImageError = imageErrors.has(produitId);
+                  const showImage = produitImage && !hasImageError;
 
                   return (
                     <div
@@ -296,10 +385,13 @@ export default function CategorieModal({
                       }}
                     >
                       {/* Image du produit */}
-                      {produitImage ? (
+                      {showImage ? (
                         <img
                           src={produitImage}
                           alt={produitNom}
+                          onError={() => {
+                            setImageErrors(prev => new Set(prev).add(produitId));
+                          }}
                           style={{
                             width: '100%',
                             height: '150px',
@@ -317,9 +409,9 @@ export default function CategorieModal({
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
-                          color: '#9ca3af'
+                          fontSize: '4rem'
                         }}>
-                          Pas d'image
+                          {produitEmoji}
                         </div>
                       )}
 

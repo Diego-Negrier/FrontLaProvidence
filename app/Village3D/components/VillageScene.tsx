@@ -14,9 +14,11 @@ import { setupFPSControls } from '../utils/controls';
 import { setupMinimap, renderMinimap } from '../utils/minimap';
 import { FournisseursService } from '../../services/FournisseursService';
 import { ProduitsService } from '../../services/ProduitsService';
-import type { Fournisseur, Produit } from '../../services/types';
+import { CategoriesService } from '../../services/CategoriesService';
+import type { Fournisseur, Produit, Categorie } from '../../services/types';
 import CategorieModal from './CategorieModal';
-import { VILLAGE_CATEGORIES, type CategoryConfig } from '../../config/villageConfig';
+import FournisseursModal from './FournisseursModal';
+import type { CategoryConfig } from '../../config/villageConfig';
 import * as THREE from 'three';
 
 export default function VillageScene() {
@@ -24,26 +26,33 @@ export default function VillageScene() {
   const minimapRef = useRef<HTMLCanvasElement>(null);
   const [fournisseurs, setFournisseurs] = useState<Fournisseur[]>([]);
   const [produits, setProduits] = useState<Produit[]>([]);
+  const [categories, setCategories] = useState<Categorie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryConfig | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<Fournisseur[]>([]);
+  const [showSuppliersModal, setShowSuppliersModal] = useState(false);
 
   // Charger les données depuis l'API
   useEffect(() => {
     const loadData = async () => {
       try {
         console.log('[Village3D] Chargement des données API...');
-        const [fournisseursData, produitsData] = await Promise.all([
+        const [fournisseursData, produitsData, categoriesData] = await Promise.all([
           FournisseursService.getFournisseurs(),
-          ProduitsService.getProduits()
+          ProduitsService.getProduits(),
+          CategoriesService.getCategories()
         ]);
 
         console.log('[Village3D] Fournisseurs chargés:', fournisseursData.length);
         console.log('[Village3D] Produits chargés:', produitsData.length);
+        console.log('[Village3D] Catégories chargées:', categoriesData.length);
+        console.log('[Village3D] Première catégorie:', categoriesData[0]);
 
         setFournisseurs(fournisseursData);
         setProduits(produitsData);
+        setCategories(categoriesData);
         setLoading(false);
       } catch (err) {
         console.error('[Village3D] Erreur lors du chargement des données:', err);
@@ -71,8 +80,19 @@ export default function VillageScene() {
 
       const textures = loadTextures();
 
-      // Charger les objets avec les données des fournisseurs et produits
-      await placeObjects(scene, textures, fournisseurs, produits);
+      // DEBUG: Vérifier ce qui est passé à placeObjects
+      console.log('[VillageScene] 🔍 AVANT placeObjects:');
+      console.log('[VillageScene] - fournisseurs.length:', fournisseurs.length);
+      console.log('[VillageScene] - produits.length:', produits.length);
+      console.log('[VillageScene] - categories.length:', categories.length);
+      console.log('[VillageScene] - categories:', categories);
+      if (categories.length > 0) {
+        console.log('[VillageScene] - Première catégorie:', categories[0]);
+        console.log('[VillageScene] - Sous-catégories de la première:', categories[0].souscategories);
+      }
+
+      // Charger les objets avec les données des fournisseurs, produits et catégories
+      await placeObjects(scene, textures, fournisseurs, produits, categories);
 
       const orbit = createOrbitControls(camera, renderer);
       const fpsControls = setupFPSControls(camera);
@@ -138,14 +158,16 @@ export default function VillageScene() {
       };
 
       const handleClick = (event: MouseEvent) => {
-        console.log('[VillageScene] 🖱️ Clic détecté');
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('\n========== 🖱️ CLIC DÉTECTÉ ========== (event:', event.type, ')');
 
         // Calculer la position normalisée de la souris
         const rect = renderer.domElement.getBoundingClientRect();
         mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-        console.log('[VillageScene] Position souris normalisée:', mouse.x, mouse.y);
+        console.log('Position souris:', { x: mouse.x.toFixed(3), y: mouse.y.toFixed(3) });
 
         // Mettre à jour le raycaster
         raycaster.setFromCamera(mouse, camera);
@@ -153,55 +175,96 @@ export default function VillageScene() {
         // Trouver les intersections avec tous les objets
         const intersects = raycaster.intersectObjects(scene.children, true);
 
-        console.log('[VillageScene] Nombre d\'intersections:', intersects.length);
+        console.log(`\n📊 INTERSECTIONS: ${intersects.length} objet(s) détecté(s)`);
 
         if (intersects.length > 0) {
-          console.log('[VillageScene] Premier objet intersecté:', intersects[0].object.type, intersects[0].object.name);
-
-          // Chercher le stand parent avec userData
-          let object = intersects[0].object;
-          let foundCategory = false;
-          let depth = 0;
-
-          // Remonter dans la hiérarchie pour trouver le groupe du stand
-          while (object && !foundCategory && depth < 10) {
-            console.log(`[VillageScene] Niveau ${depth}:`, object.type, 'userData:', object.userData);
-
-            // Gérer les stands de sous-catégories
-            if (object.userData && object.userData.type === 'subcategory') {
-              console.log('[VillageScene] ✅ Sous-catégorie trouvée:', object.userData.subCategory);
-              // Créer une "catégorie temporaire" qui ne contient que cette sous-catégorie
-              const tempCategory = {
-                ...object.userData.parentCategory,
-                sousCategories: [object.userData.subCategory]
-              };
-              setSelectedCategory(tempCategory);
-              setShowModal(true);
-              foundCategory = true;
-              break;
-            }
-            // Gérer les anciennes catégories (compatibilité)
-            else if (object.userData && object.userData.type === 'category') {
-              console.log('[VillageScene] ✅ Catégorie trouvée:', object.userData.category);
-              setSelectedCategory(object.userData.category);
-              setShowModal(true);
-              foundCategory = true;
-              break;
-            }
-            object = object.parent as THREE.Object3D;
-            depth++;
+          // Afficher les 10 premiers objets intersectés
+          console.log('\n🔍 Premiers objets intersectés:');
+          for (let i = 0; i < Math.min(10, intersects.length); i++) {
+            const obj = intersects[i].object;
+            console.log(`  ${i}: ${obj.type} "${obj.name}" - userData.type: "${obj.userData?.type || 'undefined'}"`);
           }
 
-          if (!foundCategory) {
-            console.log('[VillageScene] ❌ Aucune catégorie trouvée après remontée de', depth, 'niveaux');
+          // Chercher parmi toutes les intersections
+          for (let intersectIndex = 0; intersectIndex < intersects.length; intersectIndex++) {
+            let current: THREE.Object3D | null = intersects[intersectIndex].object;
+
+            console.log(`\n🔎 Analyse intersection #${intersectIndex}:`);
+
+            // Remonter dans la hiérarchie jusqu'à 20 niveaux
+            for (let depth = 0; depth < 20 && current; depth++) {
+              const userData = current.userData;
+
+              // Afficher TOUS les niveaux pour le debug
+              console.log(`  Niveau ${depth}: ${current.type} "${current.name || '(sans nom)'}"`,
+                         `| type: "${userData?.type || 'undefined'}"`,
+                         `| has category: ${!!userData?.category}`,
+                         `| has subCategory: ${!!userData?.subCategory}`,
+                         `| has suppliers: ${!!userData?.suppliers}`);
+
+              // Vérifier si on a trouvé une pancarte fournisseurs
+              if (userData && userData.type === 'suppliers' && userData.suppliers) {
+                console.log('\n✅✅✅ PANCARTE FOURNISSEURS TROUVÉE! ✅✅✅');
+                console.log('   Nombre de fournisseurs:', userData.suppliers.length);
+                setSelectedSuppliers(userData.suppliers);
+                setShowSuppliersModal(true);
+                return;
+              }
+
+              // Vérifier si on a trouvé un stand de catégorie
+              if (userData && userData.type === 'category' && userData.category) {
+                console.log('\n✅✅✅ CATÉGORIE TROUVÉE! ✅✅✅');
+                console.log('   Nom:', userData.category.nom);
+                console.log('   Sous-catégories:', userData.category.sousCategories?.length);
+                setSelectedCategory(userData.category);
+                setShowModal(true);
+                return;
+              }
+
+              // Vérifier si on a trouvé un stand de sous-catégorie
+              if (userData && userData.type === 'subcategory' && userData.subCategory && userData.parentCategory) {
+                console.log('\n✅✅✅ SOUS-CATÉGORIE TROUVÉE! ✅✅✅');
+                console.log('   Nom:', userData.subCategory.nom);
+                console.log('   Catégorie parente:', userData.parentCategory.nom);
+
+                const categoryWithOneSubCat = {
+                  ...userData.parentCategory,
+                  sousCategories: [userData.subCategory]
+                };
+
+                setSelectedCategory(categoryWithOneSubCat);
+                setShowModal(true);
+                return;
+              }
+
+              current = current.parent;
+            }
           }
+
+          console.log('\n❌❌❌ AUCUNE CATÉGORIE TROUVÉE ❌❌❌');
         } else {
-          console.log('[VillageScene] ❌ Aucune intersection détectée');
+          console.log('\n❌ Aucune intersection détectée');
         }
+        console.log('=====================================\n');
       };
 
-      renderer.domElement.addEventListener('click', handleClick);
-      renderer.domElement.addEventListener('mousemove', handleMouseMove);
+      // Test : vérifier que l'élément est bien cliquable
+      console.log('[VillageScene] 🎯 Attachement des événements de clic...');
+      console.log('[VillageScene] Renderer DOM element:', renderer.domElement);
+
+      renderer.domElement.addEventListener('click', handleClick, false);
+      renderer.domElement.addEventListener('mousemove', handleMouseMove, false);
+
+      // Test simple : clic sur le canvas
+      renderer.domElement.addEventListener('mousedown', (e) => {
+        console.log('[VillageScene] 🖱️ MOUSEDOWN détecté!', e.button);
+      }, false);
+
+      renderer.domElement.addEventListener('mouseup', (e) => {
+        console.log('[VillageScene] 🖱️ MOUSEUP détecté!', e.button);
+      }, false);
+
+      console.log('[VillageScene] ✅ Événements attachés');
 
       function animate() {
         animationId = requestAnimationFrame(animate);
@@ -216,6 +279,7 @@ export default function VillageScene() {
       animate();
 
       return () => {
+        console.log('[VillageScene] 🧹 Nettoyage...');
         if (animationId) cancelAnimationFrame(animationId);
         if (cleanupControls) cleanupControls();
         if (cleanupResize) cleanupResize();
@@ -237,7 +301,7 @@ export default function VillageScene() {
     return () => {
       if (cleanup) cleanup();
     };
-  }, [containerRef, minimapRef, loading, fournisseurs, produits]);
+  }, [containerRef, minimapRef, loading, fournisseurs, produits, categories]);
 
   if (loading) {
     return (
@@ -287,13 +351,17 @@ export default function VillageScene() {
 
   return (
     <>
-      <div ref={containerRef} style={{ width: '100%', height: '100vh' }} />
+      <div ref={containerRef} style={{
+        width: '100%',
+        height: 'calc(100vh - 64px)', // 64px = hauteur du header
+        marginTop: '64px' // Pousser sous le header
+      }} />
       <canvas
         ref={minimapRef}
         style={{
           position: 'fixed',
           right: '10px',
-          top: '10px',
+          top: '74px', // 64px header + 10px marge
           width: '200px',
           height: '200px',
           border: '3px solid white',
@@ -305,7 +373,7 @@ export default function VillageScene() {
       <div style={{
         position: 'fixed',
         left: '10px',
-        top: '10px',
+        top: '74px', // 64px header + 10px marge
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         padding: '15px',
         borderRadius: '8px',
@@ -316,10 +384,10 @@ export default function VillageScene() {
           🏘️ Village 3D - Marché
         </h3>
         <p style={{ margin: '5px 0', fontSize: '14px', color: '#666' }}>
-          <strong>{VILLAGE_CATEGORIES.length}</strong> catégories
+          <strong>{categories.length}</strong> catégories
         </p>
         <p style={{ margin: '5px 0', fontSize: '14px', color: '#666' }}>
-          <strong>{VILLAGE_CATEGORIES.reduce((sum, cat) => sum + cat.sousCategories.length, 0)}</strong> sous-catégories
+          <strong>{categories.reduce((sum, cat) => sum + (cat.souscategories?.length || 0), 0)}</strong> sous-catégories
         </p>
         <p style={{ margin: '5px 0', fontSize: '14px', color: '#666' }}>
           <strong>{produits.length}</strong> produits disponibles
@@ -340,6 +408,18 @@ export default function VillageScene() {
           onClose={() => {
             setShowModal(false);
             setSelectedCategory(null);
+          }}
+        />
+      )}
+
+      {/* Modal des fournisseurs */}
+      {showSuppliersModal && selectedSuppliers.length > 0 && (
+        <FournisseursModal
+          isOpen={showSuppliersModal}
+          suppliers={selectedSuppliers}
+          onClose={() => {
+            setShowSuppliersModal(false);
+            setSelectedSuppliers([]);
           }}
         />
       )}

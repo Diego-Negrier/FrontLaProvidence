@@ -24,7 +24,20 @@ const VillageScene = dynamic(() => import('./components/VillageScene'), {
 
 export default function Village3DPage() {
   return (
-    <Suspense fallback={<div>Chargement...</div>}>
+    <Suspense fallback={
+      <div style={{
+        width: '100%',
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#87CEEB',
+        fontSize: '24px',
+        color: '#fff'
+      }}>
+        Chargement du village 3D...
+      </div>
+    }>
       <VillageScene />
     </Suspense>
   );

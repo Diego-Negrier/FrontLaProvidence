@@ -82,7 +82,10 @@ class ProduitsServiceClass extends BaseService {
    */
   async getProductsByCategory(categoryId: number): Promise<Produit[]> {
     try {
-      return await this.get<Produit[]>('api/magasin', { categorie: categoryId }, false);
+      console.log(`[ProduitsService] 🔍 Recherche produits pour catégorie ${categoryId} via api/magasin?categorie=${categoryId}`);
+      const produits = await this.get<Produit[]>('api/magasin', { categorie: categoryId }, false);
+      console.log(`[ProduitsService] ✅ API a retourné ${produits.length} produits`);
+      return produits;
     } catch (error: any) {
       console.error("Erreur lors du filtrage par catégorie:", error.message);
       throw new Error(error.message || "Erreur de filtrage");

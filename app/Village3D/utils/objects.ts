@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { VILLAGE_SHOPS, VILLAGE_CATEGORIES, type CategoryConfig } from '../../config/villageConfig';
+import { VILLAGE_SHOPS, VILLAGE_CATEGORIES, type CategoryConfig, type SubCategoryConfig } from '../../config/villageConfig';
 import type { Fournisseur, Produit } from '../../services/types';
 import type { Shop } from '../../types/village';
 
@@ -545,7 +545,7 @@ export function loadGLBModel(
   position: { x: number; y: number; z: number },
   scale: number = 1,
   rotation: number = 0,
-  metadata?: { shopId?: number; fournisseurId?: number; nom?: string }
+  metadata?: { shopId?: number; fournisseurId?: number; nom?: string; isClickable?: boolean; type?: string }
 ): Promise<THREE.Group> {
   const loader = new GLTFLoader();
 
@@ -622,199 +622,1851 @@ function mapFournisseursToShops(fournisseurs: Fournisseur[], produits: Produit[]
   });
 }
 
-// Fonction pour créer un stand de sous-catégorie
+// Fonction pour créer un stand de sous-catégorie AMÉLIORÉ
 function createSubCategoryStall(
-  scene: THREE.Scene,
   x: number,
   z: number,
   rotation: number,
   subCategory: any,
-  color: number
+  color: number,
+  fournisseurs: Fournisseur[] = [],
+  produits: Produit[] = []
 ) {
   const stallGroup = new THREE.Group();
+  const scale = 1.8; // Augmenter la taille globale de 80%
 
-  const woodColor = color;
-  const canvasColor = 0xf4e4c1;
+  // Couleurs médiévales authentiques
+  const woodColor = new THREE.Color(color).multiplyScalar(0.7); // Bois vieilli plus sombre
+  const accentColor = new THREE.Color(color).offsetHSL(0, -0.3, -0.1); // Couleur patinée
+  const stoneColor = 0x8b7355; // Pierre médiévale
 
-  // Poteaux d'angle (plus petits pour les sous-catégories)
-  const postGeometry = new THREE.BoxGeometry(0.12, 2.5, 0.12);
-  const postMaterial = new THREE.MeshStandardMaterial({ color: woodColor, roughness: 0.8 });
+  // BASE EN PIERRE MÉDIÉVALE (pavés)
+  const baseGeometry = new THREE.BoxGeometry(3 * scale, 0.3, 2.2 * scale);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: stoneColor,
+    roughness: 0.95,
+    metalness: 0,
+    bumpScale: 0.02
+  });
+  const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  base.position.set(0, 0.15, 0);
+  base.castShadow = true;
+  base.receiveShadow = true;
+  stallGroup.add(base);
+
+  // Ajout de pavés individuels (détail médiéval)
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 2; j++) {
+      const stone = new THREE.Mesh(
+        new THREE.BoxGeometry(0.9 * scale, 0.05, 0.9 * scale),
+        new THREE.MeshStandardMaterial({
+          color: new THREE.Color(stoneColor).offsetHSL(0, 0, Math.random() * 0.1 - 0.05),
+          roughness: 0.95
+        })
+      );
+      stone.position.set(
+        (i - 1) * 0.95 * scale,
+        0.32,
+        (j - 0.5) * 0.95 * scale
+      );
+      stone.castShadow = true;
+      stone.receiveShadow = true;
+      stallGroup.add(stone);
+    }
+  }
+
+  // Poteaux en bois médiéval massif (plus épais et texturés)
+  const postGeometry = new THREE.CylinderGeometry(0.15 * scale, 0.18 * scale, 3.8 * scale, 8);
+  const postMaterial = new THREE.MeshStandardMaterial({
+    color: 0x5d4e37, // Bois sombre médiéval
+    roughness: 0.9,
+    metalness: 0
+  });
 
   const positions = [
-    [-1, 1.25, -0.5],
-    [1, 1.25, -0.5],
-    [-1, 1.25, 0.5],
-    [1, 1.25, 0.5]
+    [-1.3 * scale, 1.9 * scale, -0.8 * scale],
+    [1.3 * scale, 1.9 * scale, -0.8 * scale],
+    [-1.3 * scale, 1.9 * scale, 0.8 * scale],
+    [1.3 * scale, 1.9 * scale, 0.8 * scale]
   ];
 
   positions.forEach(([px, py, pz]) => {
     const post = new THREE.Mesh(postGeometry, postMaterial);
     post.position.set(px, py, pz);
     post.castShadow = true;
+
+    // Ajouter des anneaux de fer forgé médiéval
+    for (let i = 0; i < 3; i++) {
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.18 * scale, 0.03 * scale, 8, 16),
+        new THREE.MeshStandardMaterial({
+          color: 0x2f2f2f, // Fer forgé noir
+          roughness: 0.7,
+          metalness: 0.8
+        })
+      );
+      ring.position.set(px, 0.8 + i * 1.2, pz);
+      ring.rotation.x = Math.PI / 2;
+      ring.castShadow = true;
+      stallGroup.add(ring);
+    }
+
     stallGroup.add(post);
   });
 
-  // Toit en toile
-  const roofGeometry = new THREE.BoxGeometry(2.5, 0.12, 1.5);
-  const roofMaterial = new THREE.MeshStandardMaterial({ color: canvasColor, roughness: 0.9 });
+  // TOIT EN CHAUME MÉDIÉVAL (forme incurvée)
+  const roofGeometry = new THREE.CylinderGeometry(0, 3.2 * scale, 0.8 * scale, 4);
+  const roofMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc9a861, // Chaume doré
+    roughness: 0.95,
+    metalness: 0
+  });
   const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-  roof.position.set(0, 2.5, 0);
+  roof.position.set(0, 4 * scale, 0);
+  roof.rotation.y = Math.PI / 4;
   roof.castShadow = true;
   stallGroup.add(roof);
 
-  // Comptoir
-  const counterGeometry = new THREE.BoxGeometry(2.2, 0.12, 0.9);
-  const counterMaterial = new THREE.MeshStandardMaterial({ color: woodColor, roughness: 0.7 });
+  // Base du toit en bois
+  const roofBaseGeometry = new THREE.BoxGeometry(3.3 * scale, 0.2 * scale, 2.4 * scale);
+  const roofBase = new THREE.Mesh(roofBaseGeometry, new THREE.MeshStandardMaterial({
+    color: 0x5d4e37,
+    roughness: 0.85
+  }));
+  roofBase.position.set(0, 3.6 * scale, 0);
+  roofBase.castShadow = true;
+  stallGroup.add(roofBase);
+
+  // Poutres apparentes médiévales
+  for (let i = -1; i <= 1; i++) {
+    const beam = new THREE.Mesh(
+      new THREE.BoxGeometry(0.1 * scale, 0.15 * scale, 2.5 * scale),
+      new THREE.MeshStandardMaterial({
+        color: 0x3e2f1f,
+        roughness: 0.9
+      })
+    );
+    beam.position.set(i * 1.1 * scale, 3.7 * scale, 0);
+    beam.castShadow = true;
+    stallGroup.add(beam);
+  }
+
+  // COMPTOIR EN BOIS MASSIF MÉDIÉVAL
+  const counterGeometry = new THREE.BoxGeometry(2.8 * scale, 0.25 * scale, 1.3 * scale);
+  const counterMaterial = new THREE.MeshStandardMaterial({
+    color: 0x6b4f34, // Bois foncé usé
+    roughness: 0.85,
+    metalness: 0
+  });
   const counter = new THREE.Mesh(counterGeometry, counterMaterial);
-  counter.position.set(0, 0.9, 0.3);
+  counter.position.set(0, 1.35 * scale, 0.45 * scale);
   counter.castShadow = true;
   counter.receiveShadow = true;
   stallGroup.add(counter);
 
-  // Support du comptoir
-  const supportGeometry = new THREE.BoxGeometry(0.12, 0.9, 0.12);
-  [-0.9, 0, 0.9].forEach(px => {
-    const support = new THREE.Mesh(supportGeometry, postMaterial);
-    support.position.set(px, 0.45, 0.3);
+  // Bord décoratif du comptoir (sculpté)
+  const edgeGeometry = new THREE.BoxGeometry(2.85 * scale, 0.1 * scale, 0.15 * scale);
+  const edge = new THREE.Mesh(edgeGeometry, new THREE.MeshStandardMaterial({
+    color: 0x8b6f47,
+    roughness: 0.8
+  }));
+  edge.position.set(0, 1.25 * scale, 1.15 * scale);
+  edge.castShadow = true;
+  stallGroup.add(edge);
+
+  // Supports du comptoir (poteaux sculptés)
+  const supportGeometry = new THREE.CylinderGeometry(0.12 * scale, 0.15 * scale, 1.35 * scale, 8);
+  [-1.2 * scale, 0, 1.2 * scale].forEach(px => {
+    const support = new THREE.Mesh(supportGeometry, new THREE.MeshStandardMaterial({
+      color: 0x5d4e37,
+      roughness: 0.9
+    }));
+    support.position.set(px, 0.675 * scale, 0.45 * scale);
     support.castShadow = true;
+
+    // Anneau décoratif en fer
+    const decorRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.15 * scale, 0.02 * scale, 8, 16),
+      new THREE.MeshStandardMaterial({
+        color: 0x2f2f2f,
+        roughness: 0.7,
+        metalness: 0.8
+      })
+    );
+    decorRing.position.set(px, 0.9 * scale, 0.45 * scale);
+    decorRing.rotation.x = Math.PI / 2;
+    decorRing.castShadow = true;
+    stallGroup.add(decorRing);
+
     stallGroup.add(support);
   });
 
-  // Enseigne avec emoji et nom
+  // PANNEAU DE FOND EN BOIS MÉDIÉVAL avec motif
+  const backPanelGeometry = new THREE.BoxGeometry(2.9 * scale, 2.7 * scale, 0.12);
+  const backPanelMaterial = new THREE.MeshStandardMaterial({
+    color: woodColor,
+    roughness: 0.85,
+    metalness: 0
+  });
+  const backPanel = new THREE.Mesh(backPanelGeometry, backPanelMaterial);
+  backPanel.position.set(0, 1.6 * scale, -0.85 * scale);
+  backPanel.castShadow = true;
+  backPanel.receiveShadow = true;
+  stallGroup.add(backPanel);
+
+  // Bordure décorative du panneau (style médiéval)
+  const borderThickness = 0.08 * scale;
+  const borderMaterial = new THREE.MeshStandardMaterial({
+    color: accentColor,
+    roughness: 0.75,
+    metalness: 0.1
+  });
+
+  // Bordures verticales
+  [-1.45 * scale, 1.45 * scale].forEach(x => {
+    const border = new THREE.Mesh(
+      new THREE.BoxGeometry(borderThickness, 2.8 * scale, 0.08),
+      borderMaterial
+    );
+    border.position.set(x, 1.6 * scale, -0.79 * scale);
+    border.castShadow = true;
+    stallGroup.add(border);
+  });
+
+  // Bordures horizontales
+  [-1.35 * scale, 1.35 * scale].forEach(y => {
+    const border = new THREE.Mesh(
+      new THREE.BoxGeometry(2.98 * scale, borderThickness, 0.08),
+      borderMaterial
+    );
+    border.position.set(0, y, -0.79 * scale);
+    border.castShadow = true;
+    stallGroup.add(border);
+  });
+
+  // Croix décorative centrale (style médiéval)
+  const crossMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2f2f2f,
+    roughness: 0.6,
+    metalness: 0.7
+  });
+
+  // Barre verticale de la croix
+  const verticalCross = new THREE.Mesh(
+    new THREE.BoxGeometry(0.06 * scale, 0.8 * scale, 0.05),
+    crossMaterial
+  );
+  verticalCross.position.set(0, 1.6 * scale, -0.74 * scale);
+  verticalCross.castShadow = true;
+  stallGroup.add(verticalCross);
+
+  // Barre horizontale de la croix
+  const horizontalCross = new THREE.Mesh(
+    new THREE.BoxGeometry(0.6 * scale, 0.06 * scale, 0.05),
+    crossMaterial
+  );
+  horizontalCross.position.set(0, 1.8 * scale, -0.74 * scale);
+  horizontalCross.castShadow = true;
+  stallGroup.add(horizontalCross);
+
+  // ENSEIGNE MÉDIÉVALE style parchemin
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    canvas.width = 1600;
+    canvas.height = 480;
+
+    // Fond parchemin médiéval (texture vieillie)
+    const parchmentGradient = ctx.createRadialGradient(
+      canvas.width / 2, canvas.height / 2, 0,
+      canvas.width / 2, canvas.height / 2, canvas.width / 2
+    );
+    parchmentGradient.addColorStop(0, '#f4e8d0');
+    parchmentGradient.addColorStop(0.7, '#e8d9bb');
+    parchmentGradient.addColorStop(1, '#d4c5a9');
+    ctx.fillStyle = parchmentGradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Effet vieilli (taches)
+    ctx.globalAlpha = 0.15;
+    for (let i = 0; i < 20; i++) {
+      ctx.fillStyle = '#8b7355';
+      ctx.beginPath();
+      ctx.arc(
+        Math.random() * canvas.width,
+        Math.random() * canvas.height,
+        Math.random() * 40 + 10,
+        0, Math.PI * 2
+      );
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Bordure décorative médiévale
+    ctx.strokeStyle = '#5d4e37';
+    ctx.lineWidth = 12;
+    ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+    // Bordure intérieure dorée
+    ctx.strokeStyle = '#b8860b';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(32, 32, canvas.width - 64, canvas.height - 64);
+
+    // Coins décoratifs (fleurs de lys stylisées)
+    ctx.fillStyle = '#8b6f47';
+    const corners = [
+      [60, 60], [canvas.width - 60, 60],
+      [60, canvas.height - 60], [canvas.width - 60, canvas.height - 60]
+    ];
+    corners.forEach(([x, y]) => {
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Emoji avec ombre
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 4;
+    ctx.font = 'bold 180px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(subCategory.emoji, 280, canvas.height / 2);
+
+    // Nom de la catégorie (police médiévale)
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    ctx.fillStyle = '#2d1810';
+    ctx.font = 'bold 85px Georgia, serif';
+    ctx.fillText(subCategory.nom, 950, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const signGeometry = new THREE.PlaneGeometry(4.5 * scale, 1.35 * scale);
+    const signMaterial = new THREE.MeshBasicMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+      transparent: true
+    });
+    const sign = new THREE.Mesh(signGeometry, signMaterial);
+    sign.position.set(0, 5.2 * scale, 0); // Monter l'enseigne au-dessus du toit
+    stallGroup.add(sign);
+
+    // Support de l'enseigne (chaînes en fer forgé)
+    [-2 * scale, 2 * scale].forEach(x => {
+      const chain = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.02 * scale, 0.02 * scale, 1.2 * scale, 8),
+        new THREE.MeshStandardMaterial({
+          color: 0x2f2f2f,
+          roughness: 0.6,
+          metalness: 0.9
+        })
+      );
+      chain.position.set(x, 4.6 * scale, 0);
+      chain.castShadow = true;
+      stallGroup.add(chain);
+    });
+  }
+
+  // PRODUITS sur le comptoir - adaptés à la catégorie (3 produits avec prix)
+  const productCount = 3;
+
+  // Définir les produits selon la catégorie
+  let productShapes: Array<{geometry: THREE.BufferGeometry, color: number}> = [];
+
+  if (subCategory.nom.includes('Boulangerie') || subCategory.emoji === '🥖') {
+    // Pains et viennoiseries
+    productShapes = [
+      { geometry: new THREE.CylinderGeometry(0.2 * scale, 0.2 * scale, 0.8 * scale, 8), color: 0xdaa520 }, // Baguette
+      { geometry: new THREE.SphereGeometry(0.25 * scale, 8, 8), color: 0xc19a6b }, // Pain rond
+      { geometry: new THREE.BoxGeometry(0.3 * scale, 0.2 * scale, 0.3 * scale), color: 0xe0b589 }, // Pain de mie
+      { geometry: new THREE.TorusGeometry(0.2 * scale, 0.08 * scale, 8, 12), color: 0xf4a460 }, // Couronne
+      { geometry: new THREE.ConeGeometry(0.2 * scale, 0.3 * scale, 3), color: 0xd2691e }, // Croissant
+      { geometry: new THREE.CylinderGeometry(0.15 * scale, 0.18 * scale, 0.4 * scale, 8), color: 0xcd853f }, // Brioche
+    ];
+  } else if (subCategory.nom.includes('Fromage') || subCategory.emoji === '🧀') {
+    // Fromages
+    productShapes = [
+      { geometry: new THREE.CylinderGeometry(0.3 * scale, 0.3 * scale, 0.15 * scale, 12), color: 0xfff8dc }, // Camembert
+      { geometry: new THREE.BoxGeometry(0.4 * scale, 0.2 * scale, 0.4 * scale), color: 0xffebcd }, // Fromage carré
+      { geometry: new THREE.ConeGeometry(0.25 * scale, 0.35 * scale, 8), color: 0xfaf0e6 }, // Pyramide
+      { geometry: new THREE.CylinderGeometry(0.2 * scale, 0.2 * scale, 0.5 * scale, 12), color: 0xfaebd7 }, // Bûche
+      { geometry: new THREE.SphereGeometry(0.2 * scale, 8, 8), color: 0xf5f5dc }, // Boule
+      { geometry: new THREE.TorusGeometry(0.2 * scale, 0.1 * scale, 8, 12), color: 0xfffacd }, // Couronne
+    ];
+  } else if (subCategory.nom.includes('Boucherie') || subCategory.nom.includes('Viande') || subCategory.emoji === '🥩') {
+    // Viandes
+    productShapes = [
+      { geometry: new THREE.BoxGeometry(0.4 * scale, 0.15 * scale, 0.3 * scale), color: 0x8b0000 }, // Steak
+      { geometry: new THREE.CylinderGeometry(0.2 * scale, 0.2 * scale, 0.5 * scale, 8), color: 0xa52a2a }, // Saucisson
+      { geometry: new THREE.SphereGeometry(0.2 * scale, 8, 8), color: 0xdc143c }, // Viande hachée
+      { geometry: new THREE.BoxGeometry(0.35 * scale, 0.2 * scale, 0.25 * scale), color: 0xb22222 }, // Rôti
+      { geometry: new THREE.CylinderGeometry(0.15 * scale, 0.15 * scale, 0.6 * scale, 8), color: 0x8b4513 }, // Merguez
+      { geometry: new THREE.BoxGeometry(0.3 * scale, 0.25 * scale, 0.3 * scale), color: 0xcd5c5c }, // Pièce de viande
+    ];
+  } else if (subCategory.nom.includes('Maraîcher') || subCategory.nom.includes('Légumes') || subCategory.emoji === '🥕') {
+    // Fruits et légumes
+    productShapes = [
+      { geometry: new THREE.SphereGeometry(0.2 * scale, 8, 8), color: 0xff6347 }, // Tomate
+      { geometry: new THREE.CylinderGeometry(0.1 * scale, 0.15 * scale, 0.5 * scale, 8), color: 0xff8c00 }, // Carotte
+      { geometry: new THREE.SphereGeometry(0.25 * scale, 8, 8), color: 0x32cd32 }, // Salade
+      { geometry: new THREE.BoxGeometry(0.3 * scale, 0.2 * scale, 0.25 * scale), color: 0x9acd32 }, // Courgette
+      { geometry: new THREE.SphereGeometry(0.18 * scale, 8, 8), color: 0xffa500 }, // Orange
+      { geometry: new THREE.SphereGeometry(0.22 * scale, 8, 8), color: 0xff0000 }, // Pomme
+    ];
+  } else if (subCategory.nom.includes('Épicerie') || subCategory.nom.includes('Vin') || subCategory.emoji === '🍷') {
+    // Bouteilles et bocaux
+    productShapes = [
+      { geometry: new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.8 * scale, 8), color: 0x8b0000 }, // Vin rouge
+      { geometry: new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.8 * scale, 8), color: 0xf5deb3 }, // Vin blanc
+      { geometry: new THREE.CylinderGeometry(0.15 * scale, 0.15 * scale, 0.5 * scale, 8), color: 0xdaa520 }, // Huile
+      { geometry: new THREE.CylinderGeometry(0.18 * scale, 0.18 * scale, 0.4 * scale, 8), color: 0xff6347 }, // Confiture
+      { geometry: new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.7 * scale, 8), color: 0x556b2f }, // Huile d'olive
+      { geometry: new THREE.CylinderGeometry(0.15 * scale, 0.15 * scale, 0.45 * scale, 8), color: 0xffd700 }, // Miel
+    ];
+  } else if (subCategory.nom.includes('Produits Transformés') || subCategory.nom.includes('Traiteur') || subCategory.emoji === '🍝') {
+    // Pâtes, plats préparés et produits transformés
+    productShapes = [
+      { geometry: new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.5 * scale, 8), color: 0xffd700 }, // Paquet de pâtes
+      { geometry: new THREE.TorusGeometry(0.2 * scale, 0.06 * scale, 8, 12), color: 0xffe4b5 }, // Pâtes en spirale
+      { geometry: new THREE.BoxGeometry(0.35 * scale, 0.15 * scale, 0.35 * scale), color: 0xff8c00 }, // Burger box
+      { geometry: new THREE.CylinderGeometry(0.25 * scale, 0.25 * scale, 0.15 * scale, 12), color: 0xdaa520 }, // Pizza
+      { geometry: new THREE.BoxGeometry(0.3 * scale, 0.2 * scale, 0.4 * scale), color: 0xf4a460 }, // Plat préparé
+      { geometry: new THREE.CylinderGeometry(0.18 * scale, 0.18 * scale, 0.4 * scale, 8), color: 0xffb347 }, // Bocal conserve
+    ];
+  } else if (subCategory.nom.includes('Café') || subCategory.nom.includes('Thé') || subCategory.emoji === '☕') {
+    // Café, thé, chocolat
+    productShapes = [
+      { geometry: new THREE.CylinderGeometry(0.15 * scale, 0.15 * scale, 0.5 * scale, 8), color: 0x8b4513 }, // Paquet café
+      { geometry: new THREE.BoxGeometry(0.3 * scale, 0.4 * scale, 0.2 * scale), color: 0x654321 }, // Boîte thé
+      { geometry: new THREE.BoxGeometry(0.35 * scale, 0.25 * scale, 0.2 * scale), color: 0x3e2723 }, // Tablette chocolat
+      { geometry: new THREE.CylinderGeometry(0.18 * scale, 0.18 * scale, 0.4 * scale, 8), color: 0xa0522d }, // Bocal café
+      { geometry: new THREE.BoxGeometry(0.25 * scale, 0.3 * scale, 0.15 * scale), color: 0x4e342e }, // Sachet thé
+      { geometry: new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.6 * scale, 8), color: 0x6f4e37 }, // Pot chocolat
+    ];
+  } else if (subCategory.nom.includes('Spécialités') || subCategory.nom.includes('Terroir') || subCategory.emoji === '🏔️') {
+    // Spécialités régionales (catégorie 152)
+    productShapes = [
+      { geometry: new THREE.CylinderGeometry(0.18 * scale, 0.18 * scale, 0.4 * scale, 8), color: 0xb8860b }, // Bocal spécialité
+      { geometry: new THREE.BoxGeometry(0.3 * scale, 0.25 * scale, 0.25 * scale), color: 0xdaa520 }, // Paquet régional
+      { geometry: new THREE.CylinderGeometry(0.15 * scale, 0.15 * scale, 0.5 * scale, 8), color: 0xcd853f }, // Produit de montagne
+      { geometry: new THREE.BoxGeometry(0.35 * scale, 0.2 * scale, 0.3 * scale), color: 0xd2691e }, // Spécialité locale
+      { geometry: new THREE.CylinderGeometry(0.2 * scale, 0.2 * scale, 0.35 * scale, 8), color: 0xf4a460 }, // Terroir
+      { geometry: new THREE.BoxGeometry(0.25 * scale, 0.3 * scale, 0.25 * scale), color: 0xdeb887 }, // Produit local
+    ];
+  } else if (subCategory.nom.includes('Poisson') || subCategory.nom.includes('Mer') || subCategory.emoji === '🐟') {
+    // Poissonnerie & Produits de la Mer (catégorie 153)
+    productShapes = [
+      { geometry: new THREE.BoxGeometry(0.5 * scale, 0.15 * scale, 0.25 * scale), color: 0x4682b4 }, // Filet de poisson
+      { geometry: new THREE.SphereGeometry(0.18 * scale, 8, 8), color: 0xff6347 }, // Crabe
+      { geometry: new THREE.ConeGeometry(0.15 * scale, 0.4 * scale, 8), color: 0xffa07a }, // Coquillage
+      { geometry: new THREE.BoxGeometry(0.4 * scale, 0.2 * scale, 0.3 * scale), color: 0x87ceeb }, // Poisson entier
+      { geometry: new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.5 * scale, 8), color: 0xff7f50 }, // Homard
+      { geometry: new THREE.SphereGeometry(0.15 * scale, 8, 8), color: 0xf0e68c }, // Huîtres
+    ];
+  } else if (subCategory.nom.includes('Volaille') || subCategory.nom.includes('Œuf') || subCategory.emoji === '🐓') {
+    // Volailles & Œufs (catégorie 154)
+    productShapes = [
+      { geometry: new THREE.BoxGeometry(0.4 * scale, 0.3 * scale, 0.35 * scale), color: 0xf5deb3 }, // Poulet
+      { geometry: new THREE.SphereGeometry(0.15 * scale, 8, 8), color: 0xfaebd7 }, // Œuf
+      { geometry: new THREE.BoxGeometry(0.35 * scale, 0.25 * scale, 0.3 * scale), color: 0xdaa520 }, // Canard
+      { geometry: new THREE.SphereGeometry(0.12 * scale, 8, 8), color: 0xfff8dc }, // Petit œuf
+      { geometry: new THREE.BoxGeometry(0.45 * scale, 0.35 * scale, 0.4 * scale), color: 0xd2b48c }, // Dinde
+      { geometry: new THREE.BoxGeometry(0.25 * scale, 0.25 * scale, 0.15 * scale), color: 0xffe4c4 }, // Boîte œufs
+    ];
+  } else if (subCategory.nom.includes('Pâtisserie') || subCategory.nom.includes('Confiserie') || subCategory.emoji === '🍰') {
+    // Pâtisserie & Confiserie (catégorie 155)
+    productShapes = [
+      { geometry: new THREE.CylinderGeometry(0.25 * scale, 0.25 * scale, 0.3 * scale, 12), color: 0xffb6c1 }, // Gâteau
+      { geometry: new THREE.BoxGeometry(0.3 * scale, 0.25 * scale, 0.3 * scale), color: 0xffd700 }, // Tarte
+      { geometry: new THREE.SphereGeometry(0.12 * scale, 8, 8), color: 0xff69b4 }, // Bonbon
+      { geometry: new THREE.CylinderGeometry(0.2 * scale, 0.2 * scale, 0.25 * scale, 12), color: 0xffe4e1 }, // Pâtisserie
+      { geometry: new THREE.BoxGeometry(0.35 * scale, 0.2 * scale, 0.25 * scale), color: 0xffc0cb }, // Éclair
+      { geometry: new THREE.ConeGeometry(0.15 * scale, 0.3 * scale, 8), color: 0xffb3de }, // Cornet
+    ];
+  } else {
+    // Produits génériques pour les autres catégories
+    productShapes = [
+      { geometry: new THREE.BoxGeometry(0.3 * scale, 0.3 * scale, 0.3 * scale), color: 0xdaa520 },
+      { geometry: new THREE.CylinderGeometry(0.2 * scale, 0.2 * scale, 0.4 * scale, 8), color: 0xff6347 },
+      { geometry: new THREE.SphereGeometry(0.2 * scale, 8, 8), color: 0x90ee90 },
+      { geometry: new THREE.BoxGeometry(0.25 * scale, 0.35 * scale, 0.25 * scale), color: 0x8b4513 },
+      { geometry: new THREE.CylinderGeometry(0.15 * scale, 0.15 * scale, 0.5 * scale, 8), color: 0xffd700 },
+      { geometry: new THREE.BoxGeometry(0.35 * scale, 0.25 * scale, 0.3 * scale), color: 0x4682b4 },
+    ];
+  }
+
+  // Placer les produits sur le comptoir
+  for (let i = 0; i < Math.min(productCount, productShapes.length); i++) {
+    const { geometry, color } = productShapes[i];
+    const productMaterial = new THREE.MeshStandardMaterial({
+      color: color,
+      roughness: 0.6,
+      metalness: 0.2
+    });
+    const product = new THREE.Mesh(geometry, productMaterial);
+
+    // Position sur le comptoir - espacés sur toute la largeur
+    // Le comptoir fait 2.6 * scale de large, donc on limite à 2.4 * scale pour laisser une marge
+    const counterWidth = 2.4 * scale; // Largeur utilisable du comptoir
+    const spacing = counterWidth / (productCount + 0.5); // Espacement dynamique basé sur le nombre de produits
+    const offsetX = (i - (productCount - 1) / 2) * spacing;
+
+    product.position.set(
+      offsetX,
+      1.5 * scale, // Légèrement plus haut pour être bien visible
+      0.5 * scale  // Un peu plus vers l'avant
+    );
+
+    // Orientation des produits selon leur forme
+    if (geometry instanceof THREE.CylinderGeometry) {
+      // Pour les cylindres (bouteilles, baguettes, saucissons)
+      // Les coucher sur le côté sauf pour les bouteilles qui doivent rester debout
+      if (subCategory.nom.includes('Épicerie') || subCategory.nom.includes('Vin')) {
+        // Bouteilles : rester debout (pas de rotation)
+        product.rotation.y = Math.random() * Math.PI * 2;
+      } else {
+        // Pains, saucissons : coucher sur le côté
+        product.rotation.z = Math.PI / 2;
+        product.rotation.y = Math.random() * Math.PI * 2;
+      }
+    } else if (geometry instanceof THREE.TorusGeometry) {
+      // Couronnes : à plat sur le comptoir
+      product.rotation.x = Math.PI / 2;
+    } else if (geometry instanceof THREE.ConeGeometry) {
+      // Cônes (croissants, pyramides de fromage) : coucher sur le côté
+      product.rotation.z = Math.PI / 2;
+      product.rotation.y = Math.random() * Math.PI;
+    } else {
+      // Cubes et sphères : rotation aléatoire
+      product.rotation.y = Math.random() * Math.PI * 2;
+    }
+
+    product.castShadow = true;
+    product.receiveShadow = true;
+    stallGroup.add(product);
+  }
+
+  // ========================================
+  // PANNEAU DE FERMETURE SI PAS DE PRODUITS
+  // ========================================
+  // Filtrer les produits de cette sous-catégorie
+  const subcategoryProducts = produits.filter(p => {
+    // Vérifier si le produit appartient à cette sous-catégorie
+    const productCategoryId = p.souscategorie || p.categorie;
+    const subcatId = (subCategory as any).pk || (subCategory as any).id;
+    return productCategoryId === subcatId;
+  });
+
+  console.log(`[Stand ${subCategory.nom}] Produits trouvés: ${subcategoryProducts.length}`);
+
+  // Si aucun produit, ajouter un panneau FERMÉ
+  if (subcategoryProducts.length === 0) {
+    const closedCanvas = document.createElement('canvas');
+    const closedCtx = closedCanvas.getContext('2d');
+    if (closedCtx) {
+      closedCanvas.width = 1800;
+      closedCanvas.height = 1000;
+
+      // Fond en bois sombre (fermé)
+      const woodGradient = closedCtx.createLinearGradient(0, 0, 0, closedCanvas.height);
+      woodGradient.addColorStop(0, '#3e2f1f');
+      woodGradient.addColorStop(0.5, '#2d1810');
+      woodGradient.addColorStop(1, '#1a0f0a');
+      closedCtx.fillStyle = woodGradient;
+      closedCtx.fillRect(0, 0, closedCanvas.width, closedCanvas.height);
+
+      // Texture bois (lignes verticales)
+      closedCtx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      closedCtx.lineWidth = 3;
+      for (let i = 0; i < 20; i++) {
+        const x = (i / 20) * closedCanvas.width;
+        closedCtx.beginPath();
+        closedCtx.moveTo(x, 0);
+        closedCtx.lineTo(x + Math.random() * 50 - 25, closedCanvas.height);
+        closedCtx.stroke();
+      }
+
+      // Bordure clouée (style médiéval)
+      closedCtx.strokeStyle = '#1a0f0a';
+      closedCtx.lineWidth = 20;
+      closedCtx.strokeRect(10, 10, closedCanvas.width - 20, closedCanvas.height - 20);
+
+      // Clous décoratifs en fer
+      const nailPositions = [
+        // Coins
+        [50, 50], [closedCanvas.width - 50, 50],
+        [50, closedCanvas.height - 50], [closedCanvas.width - 50, closedCanvas.height - 50],
+        // Milieux
+        [closedCanvas.width / 2, 50], [closedCanvas.width / 2, closedCanvas.height - 50],
+        [50, closedCanvas.height / 2], [closedCanvas.width - 50, closedCanvas.height / 2]
+      ];
+
+      nailPositions.forEach(([nx, ny]) => {
+        // Tête du clou
+        closedCtx.fillStyle = '#2f2f2f';
+        closedCtx.beginPath();
+        closedCtx.arc(nx, ny, 25, 0, Math.PI * 2);
+        closedCtx.fill();
+
+        // Reflet du clou
+        closedCtx.fillStyle = '#4a4a4a';
+        closedCtx.beginPath();
+        closedCtx.arc(nx - 5, ny - 5, 8, 0, Math.PI * 2);
+        closedCtx.fill();
+      });
+
+      // Chaînes en croix (fermé avec cadenas)
+      closedCtx.strokeStyle = '#2f2f2f';
+      closedCtx.lineWidth = 30;
+      closedCtx.lineCap = 'round';
+
+      // Chaîne diagonale 1
+      closedCtx.beginPath();
+      closedCtx.moveTo(200, 200);
+      closedCtx.lineTo(closedCanvas.width - 200, closedCanvas.height - 200);
+      closedCtx.stroke();
+
+      // Chaîne diagonale 2
+      closedCtx.beginPath();
+      closedCtx.moveTo(closedCanvas.width - 200, 200);
+      closedCtx.lineTo(200, closedCanvas.height - 200);
+      closedCtx.stroke();
+
+      // Maillons de chaîne (détails)
+      closedCtx.strokeStyle = '#1a1a1a';
+      closedCtx.lineWidth = 25;
+      for (let i = 0; i < 8; i++) {
+        const t = i / 7;
+        const x1 = 200 + (closedCanvas.width - 400) * t;
+        const y1 = 200 + (closedCanvas.height - 400) * t;
+        closedCtx.beginPath();
+        closedCtx.arc(x1, y1, 40, 0, Math.PI * 2);
+        closedCtx.stroke();
+      }
+
+      // Cadenas au centre
+      const lockX = closedCanvas.width / 2;
+      const lockY = closedCanvas.height / 2;
+
+      // Corps du cadenas
+      closedCtx.fillStyle = '#3a3a3a';
+      closedCtx.fillRect(lockX - 100, lockY - 50, 200, 150);
+
+      // Reflet métallique
+      const lockGradient = closedCtx.createLinearGradient(lockX - 100, lockY, lockX + 100, lockY);
+      lockGradient.addColorStop(0, '#2a2a2a');
+      lockGradient.addColorStop(0.5, '#5a5a5a');
+      lockGradient.addColorStop(1, '#2a2a2a');
+      closedCtx.fillStyle = lockGradient;
+      closedCtx.fillRect(lockX - 90, lockY - 40, 180, 130);
+
+      // Anse du cadenas
+      closedCtx.strokeStyle = '#3a3a3a';
+      closedCtx.lineWidth = 40;
+      closedCtx.beginPath();
+      closedCtx.arc(lockX, lockY - 80, 80, Math.PI, 0, false);
+      closedCtx.stroke();
+
+      // Trou de serrure
+      closedCtx.fillStyle = '#1a1a1a';
+      closedCtx.beginPath();
+      closedCtx.arc(lockX, lockY + 20, 25, 0, Math.PI * 2);
+      closedCtx.fill();
+      closedCtx.fillRect(lockX - 12, lockY + 20, 24, 50);
+
+      // Texte "FERMÉ" au-dessus
+      closedCtx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      closedCtx.shadowBlur = 15;
+      closedCtx.shadowOffsetX = 5;
+      closedCtx.shadowOffsetY = 5;
+      closedCtx.fillStyle = '#ff4444';
+      closedCtx.font = 'bold 180px Georgia, serif';
+      closedCtx.textAlign = 'center';
+      closedCtx.textBaseline = 'middle';
+      closedCtx.fillText('FERMÉ', closedCanvas.width / 2, 150);
+
+      // Sous-texte explicatif
+      closedCtx.shadowBlur = 8;
+      closedCtx.fillStyle = '#cccccc';
+      closedCtx.font = 'italic 60px Georgia, serif';
+      closedCtx.fillText('Aucun produit disponible', closedCanvas.width / 2, closedCanvas.height - 120);
+
+      // Créer le mesh du panneau fermé
+      const closedTexture = new THREE.CanvasTexture(closedCanvas);
+      const closedSignGeometry = new THREE.PlaneGeometry(3.8 * scale, 2.1 * scale);
+      const closedSignMaterial = new THREE.MeshStandardMaterial({
+        map: closedTexture,
+        side: THREE.DoubleSide,
+        roughness: 0.9,
+        metalness: 0.1
+      });
+      const closedSign = new THREE.Mesh(closedSignGeometry, closedSignMaterial);
+
+      // Positionner le panneau au centre du stand, devant
+      closedSign.position.set(0, 2 * scale, 0.8 * scale);
+      closedSign.rotation.y = 0;
+      closedSign.castShadow = true;
+      closedSign.receiveShadow = true;
+
+      // Marquer comme non cliquable (fermé)
+      closedSign.userData = {
+        type: 'closed',
+        isClickable: false,
+        message: 'Ce stand est actuellement fermé - Aucun produit disponible'
+      };
+
+      stallGroup.add(closedSign);
+
+      console.log(`  🔒 Panneau FERMÉ ajouté (pas de produits)`);
+    }
+  }
+
+  // FILTRER LES FOURNISSEURS PAR CATÉGORIE avec produits
+  const fournisseursAvecProduitsCategorie = fournisseurs.filter(f => {
+    const fournisseurId = (f as any).pk || (f as any).id;
+    return produits.some(p => {
+      const produitFournisseur = p.fournisseur || p.pk_fournisseur;
+      const productCategoryId = p.souscategorie || p.categorie;
+      const subcatId = (subCategory as any).pk || (subCategory as any).id;
+      return produitFournisseur === fournisseurId && productCategoryId === subcatId;
+    });
+  });
+
+  console.log(`[Stand ${subCategory.nom}] Fournisseurs avec produits: ${fournisseursAvecProduitsCategorie.length}/${fournisseurs.length}`);
+
+  // PANCARTE DES FOURNISSEURS (style parchemin médiéval amélioré)
+  const supplierCanvas = document.createElement('canvas');
+  const supplierCtx = supplierCanvas.getContext('2d');
+  if (supplierCtx) {
+    supplierCanvas.width = 1400;
+    supplierCanvas.height = 900;
+
+    // Fond parchemin avec dégradé radial
+    const parchmentGradient = supplierCtx.createRadialGradient(
+      supplierCanvas.width / 2, supplierCanvas.height / 2, 100,
+      supplierCanvas.width / 2, supplierCanvas.height / 2, 800
+    );
+    parchmentGradient.addColorStop(0, '#f4e8d0');
+    parchmentGradient.addColorStop(0.5, '#e8dcc0');
+    parchmentGradient.addColorStop(1, '#d4c5a9');
+    supplierCtx.fillStyle = parchmentGradient;
+    supplierCtx.fillRect(0, 0, supplierCanvas.width, supplierCanvas.height);
+
+    // Effet vieilli (taches aléatoires)
+    supplierCtx.fillStyle = 'rgba(139, 90, 43, 0.05)';
+    for (let i = 0; i < 20; i++) {
+      supplierCtx.beginPath();
+      supplierCtx.arc(
+        Math.random() * supplierCanvas.width,
+        Math.random() * supplierCanvas.height,
+        Math.random() * 40 + 10,
+        0, Math.PI * 2
+      );
+      supplierCtx.fill();
+    }
+
+    // Bordure double (bois + dorée)
+    supplierCtx.strokeStyle = '#5d4e37'; // Bois
+    supplierCtx.lineWidth = 10;
+    supplierCtx.strokeRect(15, 15, supplierCanvas.width - 30, supplierCanvas.height - 30);
+
+    supplierCtx.strokeStyle = '#b8860b'; // Or
+    supplierCtx.lineWidth = 5;
+    supplierCtx.strokeRect(25, 25, supplierCanvas.width - 50, supplierCanvas.height - 50);
+
+    // Coins décoratifs (fleurs de lys)
+    const corners = [
+      [40, 40], [supplierCanvas.width - 40, 40],
+      [40, supplierCanvas.height - 40], [supplierCanvas.width - 40, supplierCanvas.height - 40]
+    ];
+    supplierCtx.fillStyle = '#b8860b';
+    corners.forEach(([cx, cy]) => {
+      supplierCtx.beginPath();
+      supplierCtx.arc(cx, cy, 12, 0, Math.PI * 2);
+      supplierCtx.fill();
+    });
+
+    // Titre "Fournisseurs" - PLUS GRAND ET LISIBLE
+    supplierCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    supplierCtx.shadowBlur = 6;
+    supplierCtx.shadowOffsetX = 3;
+    supplierCtx.shadowOffsetY = 3;
+    supplierCtx.fillStyle = '#1a0f0a';
+    supplierCtx.font = 'bold 90px Georgia, serif';
+    supplierCtx.textAlign = 'center';
+    supplierCtx.textBaseline = 'top';
+    supplierCtx.fillText('Fournisseurs', supplierCanvas.width / 2, 70);
+
+    // Liste des fournisseurs (max 3 pour éviter surcharge)
+    const maxSuppliers = 3;
+    const suppliersList = fournisseursAvecProduitsCategorie.slice(0, maxSuppliers);
+
+    supplierCtx.font = 'bold 60px Georgia, serif'; // TEXTE PLUS GROS
+    supplierCtx.shadowBlur = 3;
+    supplierCtx.shadowOffsetX = 2;
+    supplierCtx.shadowOffsetY = 2;
+
+    let yOffset = 220;
+    const lineHeight = 120;
+
+    if (suppliersList.length === 0) {
+      supplierCtx.fillStyle = '#666';
+      supplierCtx.font = 'italic 50px Georgia, serif';
+      supplierCtx.fillText('Aucun fournisseur', supplierCanvas.width / 2, yOffset + 60);
+    } else {
+      suppliersList.forEach((supplier: Fournisseur) => {
+        // Puce décorative PLUS GROSSE
+        supplierCtx.fillStyle = '#b8860b';
+        supplierCtx.beginPath();
+        supplierCtx.arc(140, yOffset + 30, 12, 0, Math.PI * 2);
+        supplierCtx.fill();
+
+        // Nom du fournisseur - TEXTE PLUS GROS ET CONTRASTÉ
+        supplierCtx.fillStyle = '#1a0f0a'; // Couleur plus foncée pour meilleure lisibilité
+        supplierCtx.textAlign = 'left';
+        const nomFournisseur = (supplier as any).nom_fournisseur || (supplier as any).nom || 'Fournisseur';
+        supplierCtx.fillText(nomFournisseur, 180, yOffset);
+
+        yOffset += lineHeight;
+      });
+
+      // Indication s'il y a plus de fournisseurs
+      if (fournisseurs.length > maxSuppliers) {
+        supplierCtx.fillStyle = '#666';
+        supplierCtx.font = 'italic 35px Georgia, serif';
+        supplierCtx.textAlign = 'center';
+        supplierCtx.fillText(
+          `et ${fournisseurs.length - maxSuppliers} autre(s)...`,
+          supplierCanvas.width / 2,
+          yOffset + 20
+        );
+      }
+    }
+
+    // Créer la texture et le mesh
+    const supplierTexture = new THREE.CanvasTexture(supplierCanvas);
+    const supplierSignGeometry = new THREE.PlaneGeometry(1.6 * scale, 1.1 * scale); // Plus petit pour le pied
+    const supplierSignMaterial = new THREE.MeshStandardMaterial({
+      map: supplierTexture,
+      side: THREE.DoubleSide,
+      roughness: 0.8,
+      metalness: 0.1
+    });
+    const supplierSign = new THREE.Mesh(supplierSignGeometry, supplierSignMaterial);
+
+    // Positionner la pancarte fournisseurs AU PIED du stand (devant)
+    supplierSign.position.set(0, 0.6 * scale, 1.3 * scale); // Au pied, devant le stand
+    supplierSign.rotation.y = 0; // Face à la caméra
+    supplierSign.castShadow = true;
+    supplierSign.receiveShadow = true;
+
+    // Rendre la pancarte cliquable
+    supplierSign.userData = {
+      type: 'suppliers',
+      suppliers: fournisseurs,
+      isClickable: true
+    };
+
+    stallGroup.add(supplierSign);
+
+    // Support en bois pour la pancarte au sol (2 poteaux)
+    for (let i = -1; i <= 1; i += 2) {
+      const support = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04 * scale, 0.04 * scale, 1.2 * scale, 8),
+        new THREE.MeshStandardMaterial({
+          color: 0x4a2511, // Bois
+          roughness: 0.8
+        })
+      );
+      support.position.set(i * 0.7 * scale, 0.6 * scale, 1.3 * scale);
+      support.castShadow = true;
+      stallGroup.add(support);
+    }
+  }
+
+  stallGroup.position.set(x, 0, z);
+  stallGroup.rotation.y = rotation;
+  stallGroup.name = `CategoryStall_${subCategory.id}_${subCategory.nom}`;
+
+  return stallGroup;
+}
+
+// Fonction pour créer une pancarte fournisseurs (réutilisable)
+function createSupplierSign(fournisseurs: Fournisseur[], scale: number = 1.8) {
+  const supplierCanvas = document.createElement('canvas');
+  const supplierCtx = supplierCanvas.getContext('2d');
+  if (!supplierCtx) return null;
+
+  supplierCanvas.width = 1200;
+  supplierCanvas.height = 800;
+
+  // Fond parchemin avec dégradé radial
+  const parchmentGradient = supplierCtx.createRadialGradient(
+    supplierCanvas.width / 2, supplierCanvas.height / 2, 100,
+    supplierCanvas.width / 2, supplierCanvas.height / 2, 800
+  );
+  parchmentGradient.addColorStop(0, '#f4e8d0');
+  parchmentGradient.addColorStop(0.5, '#e8dcc0');
+  parchmentGradient.addColorStop(1, '#d4c5a9');
+  supplierCtx.fillStyle = parchmentGradient;
+  supplierCtx.fillRect(0, 0, supplierCanvas.width, supplierCanvas.height);
+
+  // Effet vieilli
+  supplierCtx.fillStyle = 'rgba(139, 90, 43, 0.05)';
+  for (let i = 0; i < 20; i++) {
+    supplierCtx.beginPath();
+    supplierCtx.arc(
+      Math.random() * supplierCanvas.width,
+      Math.random() * supplierCanvas.height,
+      Math.random() * 40 + 10,
+      0, Math.PI * 2
+    );
+    supplierCtx.fill();
+  }
+
+  // Bordure double
+  supplierCtx.strokeStyle = '#5d4e37';
+  supplierCtx.lineWidth = 10;
+  supplierCtx.strokeRect(15, 15, supplierCanvas.width - 30, supplierCanvas.height - 30);
+  supplierCtx.strokeStyle = '#b8860b';
+  supplierCtx.lineWidth = 5;
+  supplierCtx.strokeRect(25, 25, supplierCanvas.width - 50, supplierCanvas.height - 50);
+
+  // Coins décoratifs
+  const corners = [
+    [40, 40], [supplierCanvas.width - 40, 40],
+    [40, supplierCanvas.height - 40], [supplierCanvas.width - 40, supplierCanvas.height - 40]
+  ];
+  supplierCtx.fillStyle = '#b8860b';
+  corners.forEach(([cx, cy]) => {
+    supplierCtx.beginPath();
+    supplierCtx.arc(cx, cy, 12, 0, Math.PI * 2);
+    supplierCtx.fill();
+  });
+
+  // Titre "Fournisseurs"
+  supplierCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  supplierCtx.shadowBlur = 4;
+  supplierCtx.shadowOffsetX = 2;
+  supplierCtx.shadowOffsetY = 2;
+  supplierCtx.fillStyle = '#3e2f1f';
+  supplierCtx.font = 'bold 70px Georgia, serif';
+  supplierCtx.textAlign = 'center';
+  supplierCtx.textBaseline = 'top';
+  supplierCtx.fillText('Fournisseurs', supplierCanvas.width / 2, 80);
+
+  // Liste des fournisseurs (max 3)
+  const maxSuppliers = 3;
+  const suppliersList = fournisseurs.slice(0, maxSuppliers);
+
+  supplierCtx.font = '45px Georgia, serif';
+  supplierCtx.shadowBlur = 2;
+  supplierCtx.shadowOffsetX = 1;
+  supplierCtx.shadowOffsetY = 1;
+
+  let yOffset = 180;
+  const lineHeight = 90;
+
+  if (suppliersList.length === 0) {
+    supplierCtx.fillStyle = '#666';
+    supplierCtx.font = 'italic 40px Georgia, serif';
+    supplierCtx.fillText('Aucun fournisseur', supplierCanvas.width / 2, yOffset + 60);
+  } else {
+    suppliersList.forEach((supplier: Fournisseur) => {
+      supplierCtx.fillStyle = '#b8860b';
+      supplierCtx.beginPath();
+      supplierCtx.arc(120, yOffset + 20, 8, 0, Math.PI * 2);
+      supplierCtx.fill();
+
+      supplierCtx.fillStyle = '#3e2f1f';
+      supplierCtx.textAlign = 'left';
+      const nomFournisseur = (supplier as any).nom_fournisseur || (supplier as any).nom || 'Fournisseur';
+      supplierCtx.fillText(nomFournisseur, 150, yOffset);
+
+      yOffset += lineHeight;
+    });
+
+    if (fournisseurs.length > maxSuppliers) {
+      supplierCtx.fillStyle = '#666';
+      supplierCtx.font = 'italic 35px Georgia, serif';
+      supplierCtx.textAlign = 'center';
+      supplierCtx.fillText(
+        `et ${fournisseurs.length - maxSuppliers} autre(s)...`,
+        supplierCanvas.width / 2,
+        yOffset + 20
+      );
+    }
+  }
+
+  const supplierTexture = new THREE.CanvasTexture(supplierCanvas);
+  return supplierTexture;
+}
+
+// Fonction utilitaire pour créer un panneau FERMÉ
+function createClosedSign(scale: number = 1.8): THREE.Mesh {
+  const closedCanvas = document.createElement('canvas');
+  const closedCtx = closedCanvas.getContext('2d');
+
+  if (!closedCtx) {
+    throw new Error('Cannot create canvas context');
+  }
+
+  closedCanvas.width = 1800;
+  closedCanvas.height = 1000;
+
+  // Fond en bois sombre (fermé)
+  const woodGradient = closedCtx.createLinearGradient(0, 0, 0, closedCanvas.height);
+  woodGradient.addColorStop(0, '#3e2f1f');
+  woodGradient.addColorStop(0.5, '#2d1810');
+  woodGradient.addColorStop(1, '#1a0f0a');
+  closedCtx.fillStyle = woodGradient;
+  closedCtx.fillRect(0, 0, closedCanvas.width, closedCanvas.height);
+
+  // Texture bois (lignes verticales)
+  closedCtx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+  closedCtx.lineWidth = 3;
+  for (let i = 0; i < 20; i++) {
+    const x = (i / 20) * closedCanvas.width;
+    closedCtx.beginPath();
+    closedCtx.moveTo(x, 0);
+    closedCtx.lineTo(x + Math.random() * 50 - 25, closedCanvas.height);
+    closedCtx.stroke();
+  }
+
+  // Bordure clouée (style médiéval)
+  closedCtx.strokeStyle = '#1a0f0a';
+  closedCtx.lineWidth = 20;
+  closedCtx.strokeRect(10, 10, closedCanvas.width - 20, closedCanvas.height - 20);
+
+  // Clous décoratifs en fer
+  const nailPositions = [
+    [50, 50], [closedCanvas.width - 50, 50],
+    [50, closedCanvas.height - 50], [closedCanvas.width - 50, closedCanvas.height - 50],
+    [closedCanvas.width / 2, 50], [closedCanvas.width / 2, closedCanvas.height - 50],
+    [50, closedCanvas.height / 2], [closedCanvas.width - 50, closedCanvas.height / 2]
+  ];
+
+  nailPositions.forEach(([nx, ny]) => {
+    closedCtx.fillStyle = '#2f2f2f';
+    closedCtx.beginPath();
+    closedCtx.arc(nx, ny, 25, 0, Math.PI * 2);
+    closedCtx.fill();
+
+    closedCtx.fillStyle = '#4a4a4a';
+    closedCtx.beginPath();
+    closedCtx.arc(nx - 5, ny - 5, 8, 0, Math.PI * 2);
+    closedCtx.fill();
+  });
+
+  // Chaînes en croix
+  closedCtx.strokeStyle = '#2f2f2f';
+  closedCtx.lineWidth = 30;
+  closedCtx.lineCap = 'round';
+  closedCtx.beginPath();
+  closedCtx.moveTo(200, 200);
+  closedCtx.lineTo(closedCanvas.width - 200, closedCanvas.height - 200);
+  closedCtx.stroke();
+  closedCtx.beginPath();
+  closedCtx.moveTo(closedCanvas.width - 200, 200);
+  closedCtx.lineTo(200, closedCanvas.height - 200);
+  closedCtx.stroke();
+
+  // Cadenas au centre
+  const lockX = closedCanvas.width / 2;
+  const lockY = closedCanvas.height / 2;
+
+  closedCtx.fillStyle = '#3a3a3a';
+  closedCtx.fillRect(lockX - 100, lockY - 50, 200, 150);
+
+  const lockGradient = closedCtx.createLinearGradient(lockX - 100, lockY, lockX + 100, lockY);
+  lockGradient.addColorStop(0, '#2a2a2a');
+  lockGradient.addColorStop(0.5, '#5a5a5a');
+  lockGradient.addColorStop(1, '#2a2a2a');
+  closedCtx.fillStyle = lockGradient;
+  closedCtx.fillRect(lockX - 90, lockY - 40, 180, 130);
+
+  closedCtx.strokeStyle = '#3a3a3a';
+  closedCtx.lineWidth = 40;
+  closedCtx.beginPath();
+  closedCtx.arc(lockX, lockY - 80, 80, Math.PI, 0, false);
+  closedCtx.stroke();
+
+  closedCtx.fillStyle = '#1a1a1a';
+  closedCtx.beginPath();
+  closedCtx.arc(lockX, lockY + 20, 25, 0, Math.PI * 2);
+  closedCtx.fill();
+  closedCtx.fillRect(lockX - 12, lockY + 20, 24, 50);
+
+  // Texte "FERMÉ"
+  closedCtx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+  closedCtx.shadowBlur = 15;
+  closedCtx.shadowOffsetX = 5;
+  closedCtx.shadowOffsetY = 5;
+  closedCtx.fillStyle = '#ff4444';
+  closedCtx.font = 'bold 180px Georgia, serif';
+  closedCtx.textAlign = 'center';
+  closedCtx.textBaseline = 'middle';
+  closedCtx.fillText('FERMÉ', closedCanvas.width / 2, 150);
+
+  // Sous-texte
+  closedCtx.shadowBlur = 8;
+  closedCtx.fillStyle = '#cccccc';
+  closedCtx.font = 'italic 60px Georgia, serif';
+  closedCtx.fillText('Aucun produit disponible', closedCanvas.width / 2, closedCanvas.height - 120);
+
+  // Créer le mesh
+  const closedTexture = new THREE.CanvasTexture(closedCanvas);
+  const closedSignGeometry = new THREE.PlaneGeometry(3.8 * scale, 2.1 * scale);
+  const closedSignMaterial = new THREE.MeshStandardMaterial({
+    map: closedTexture,
+    side: THREE.DoubleSide,
+    roughness: 0.9,
+    metalness: 0.1
+  });
+  const closedSign = new THREE.Mesh(closedSignGeometry, closedSignMaterial);
+
+  closedSign.position.set(0, 2 * scale, 0.8 * scale);
+  closedSign.rotation.y = 0;
+  closedSign.castShadow = true;
+  closedSign.receiveShadow = true;
+
+  closedSign.userData = {
+    type: 'closed',
+    isClickable: false,
+    message: 'Ce stand est actuellement fermé - Aucun produit disponible'
+  };
+
+  return closedSign;
+}
+
+// Fonction pour créer un atelier de charpentier AMÉLIORÉ
+function createCarpenterWorkshop(x: number, z: number, rotation: number, category: any, fournisseurs: Fournisseur[] = [], produits: Produit[] = []) {
+  const building = new THREE.Group();
+  const scale = 1.6;
+
+  const woodColor = 0x8b4513;
+  const roofColor = 0x654321;
+
+  // Charger les textures
+  const textureLoader = new THREE.TextureLoader();
+  const pierreTexture = textureLoader.load('/textures/pierre.jpg');
+  pierreTexture.wrapS = pierreTexture.wrapT = THREE.RepeatWrapping;
+  pierreTexture.repeat.set(2, 2);
+  const drapeauTexture = textureLoader.load('/textures/drapeaux.jpg');
+
+  // Murs du bâtiment PLUS GRANDS avec texture pierre
+  const wallGeometry = new THREE.BoxGeometry(5 * scale, 4 * scale, 4.5 * scale);
+  const wallMaterial = new THREE.MeshStandardMaterial({
+    map: pierreTexture,
+    color: 0xaaaaaa, // Teinte neutre pour la texture
+    roughness: 0.9,
+    metalness: 0.1
+  });
+  const walls = new THREE.Mesh(wallGeometry, wallMaterial);
+  walls.position.set(0, 2 * scale, 0);
+  walls.castShadow = true;
+  walls.receiveShadow = true;
+  building.add(walls);
+
+  // Toit à deux pentes
+  const roofGeometry = new THREE.ConeGeometry(3.6 * scale, 2 * scale, 4);
+  const roofMaterial = new THREE.MeshStandardMaterial({
+    color: roofColor,
+    roughness: 0.9
+  });
+  const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+  roof.position.set(0, 5 * scale, 0);
+  roof.rotation.y = Math.PI / 4;
+  roof.castShadow = true;
+  building.add(roof);
+
+  // Porte PLUS GRANDE
+  const doorGeometry = new THREE.BoxGeometry(1.2 * scale, 2.4 * scale, 0.2);
+  const doorMaterial = new THREE.MeshStandardMaterial({
+    color: 0x4a2511,
+    roughness: 0.7
+  });
+  const door = new THREE.Mesh(doorGeometry, doorMaterial);
+  door.position.set(0, 1.2 * scale, 2.25 * scale);
+  door.castShadow = true;
+  building.add(door);
+
+  // Fenêtres PLUS GRANDES
+  const windowGeometry = new THREE.BoxGeometry(1 * scale, 1 * scale, 0.15);
+  const windowMaterial = new THREE.MeshStandardMaterial({
+    color: 0x87ceeb,
+    roughness: 0.3,
+    metalness: 0.5
+  });
+  [-1.6 * scale, 1.6 * scale].forEach(px => {
+    const window = new THREE.Mesh(windowGeometry, windowMaterial);
+    window.position.set(px, 2.4 * scale, 2.25 * scale);
+    building.add(window);
+  });
+
+  // Enseigne PLUS GRANDE
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    canvas.width = 1536;
+    canvas.height = 384;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#ffffff');
+    gradient.addColorStop(1, '#f5f5f0');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#8b4513';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+
+    ctx.font = 'bold 160px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(category.emoji, 220, canvas.height / 2);
+
+    ctx.fillStyle = '#2d1810';
+    ctx.font = 'bold 72px Arial';
+    ctx.fillText(category.nom, 900, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const signGeometry = new THREE.PlaneGeometry(5 * scale, 1.2 * scale);
+    const signMaterial = new THREE.MeshBasicMaterial({
+      map: texture,
+      side: THREE.DoubleSide
+    });
+    const sign = new THREE.Mesh(signGeometry, signMaterial);
+    sign.position.set(0, 5.2 * scale, 2.3 * scale);
+    building.add(sign);
+  }
+
+  // Vérifier s'il y a des produits pour ce bâtiment
+  const buildingProducts = produits.filter(p => {
+    const productCategoryId = p.souscategorie || p.categorie;
+    const categoryId = (category as any).pk || (category as any).id;
+    return productCategoryId === categoryId;
+  });
+
+  console.log(`[Atelier ${category.nom}] Produits trouvés: ${buildingProducts.length}`);
+
+  // Si aucun produit, afficher panneau FERMÉ
+  if (buildingProducts.length === 0) {
+    const closedSign = createClosedSign(scale);
+    closedSign.position.set(0, 2.5 * scale, 2.3 * scale);
+    building.add(closedSign);
+    console.log(`  🔒 Panneau FERMÉ ajouté sur l'atelier`);
+  }
+
+  // Filtrer les fournisseurs qui ont des produits dans cette catégorie
+  const fournisseursAvecProduits = fournisseurs.filter(f => {
+    const fournisseurId = (f as any).pk || (f as any).id;
+    return produits.some(p => {
+      const produitFournisseur = p.fournisseur || p.pk_fournisseur;
+      const productCategoryId = p.souscategorie || p.categorie;
+      const categoryId = (category as any).pk || (category as any).id;
+      return produitFournisseur === fournisseurId && productCategoryId === categoryId;
+    });
+  });
+
+  console.log(`[Atelier ${category.nom}] Fournisseurs avec produits: ${fournisseursAvecProduits.length}/${fournisseurs.length}`);
+
+  // PANCARTE FOURNISSEURS AU PIED du bâtiment (uniquement ceux avec produits)
+  const supplierTexture = createSupplierSign(fournisseursAvecProduits, scale);
+  if (supplierTexture && fournisseursAvecProduits.length > 0) {
+    const supplierSignGeometry = new THREE.PlaneGeometry(1.6 * scale, 1.1 * scale);
+    const supplierSignMaterial = new THREE.MeshStandardMaterial({
+      map: supplierTexture,
+      side: THREE.DoubleSide,
+      roughness: 0.8,
+      metalness: 0.1
+    });
+    const supplierSign = new THREE.Mesh(supplierSignGeometry, supplierSignMaterial);
+    supplierSign.position.set(0, 0.6 * scale, 2.8 * scale); // Devant le bâtiment
+    supplierSign.rotation.y = 0;
+    supplierSign.castShadow = true;
+    supplierSign.receiveShadow = true;
+
+    // Rendre cliquable
+    supplierSign.userData = {
+      type: 'suppliers',
+      suppliers: fournisseursAvecProduits,
+      isClickable: true
+    };
+
+    building.add(supplierSign);
+
+    // Supports en bois
+    for (let i = -1; i <= 1; i += 2) {
+      const support = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04 * scale, 0.04 * scale, 1.2 * scale, 8),
+        new THREE.MeshStandardMaterial({ color: 0x4a2511, roughness: 0.8 })
+      );
+      support.position.set(i * 0.7 * scale, 0.6 * scale, 2.8 * scale);
+      support.castShadow = true;
+      building.add(support);
+    }
+  }
+
+  // DRAPEAUX sur le toit avec texture
+  // Mât principal au sommet
+  const poleGeometry = new THREE.CylinderGeometry(0.05 * scale, 0.05 * scale, 2.5 * scale, 8);
+  const poleMaterial = new THREE.MeshStandardMaterial({
+    color: 0x4a2511,
+    roughness: 0.8
+  });
+  const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+  pole.position.set(0, 6.5 * scale, 0);
+  pole.castShadow = true;
+  building.add(pole);
+
+  // Drapeau avec texture
+  const flagGeometry = new THREE.PlaneGeometry(1.2 * scale, 0.8 * scale);
+  const flagMaterial = new THREE.MeshStandardMaterial({
+    map: drapeauTexture,
+    side: THREE.DoubleSide,
+    transparent: true
+  });
+  const flag = new THREE.Mesh(flagGeometry, flagMaterial);
+  flag.position.set(0.6 * scale, 7.3 * scale, 0);
+  flag.castShadow = true;
+  building.add(flag);
+
+  building.position.set(x, 0, z);
+  building.rotation.y = rotation;
+  building.name = `CarpenterWorkshop_${category.id}`;
+
+  return building;
+}
+
+// Fonction pour créer un atelier de tailleur de pierre
+function createStoneCutterWorkshop(x: number, z: number, rotation: number, category: any) {
+  const building = new THREE.Group();
+
+  const stoneColor = 0x808080;
+  const roofColor = 0x505050;
+
+  // Murs en pierre
+  const wallGeometry = new THREE.BoxGeometry(4.5, 3.5, 4);
+  const wallMaterial = new THREE.MeshStandardMaterial({ color: stoneColor, roughness: 0.9 });
+  const walls = new THREE.Mesh(wallGeometry, wallMaterial);
+  walls.position.set(0, 1.75, 0);
+  walls.castShadow = true;
+  walls.receiveShadow = true;
+  building.add(walls);
+
+  // Toit plat en pierre
+  const roofGeometry = new THREE.BoxGeometry(5, 0.3, 4.5);
+  const roofMaterial = new THREE.MeshStandardMaterial({ color: roofColor, roughness: 0.9 });
+  const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+  roof.position.set(0, 3.65, 0);
+  roof.castShadow = true;
+  building.add(roof);
+
+  // Porte en arc
+  const doorGeometry = new THREE.BoxGeometry(1, 2, 0.15);
+  const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.7 });
+  const door = new THREE.Mesh(doorGeometry, doorMaterial);
+  door.position.set(0, 1, 2);
+  door.castShadow = true;
+  building.add(door);
+
+  // Blocs de pierre devant l'atelier
+  for (let i = 0; i < 3; i++) {
+    const blockGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+    const blockMaterial = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, roughness: 0.9 });
+    const block = new THREE.Mesh(blockGeometry, blockMaterial);
+    block.position.set((i - 1) * 1.2, 0.3, 2.8);
+    block.castShadow = true;
+    building.add(block);
+  }
+
+  // Enseigne
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   if (ctx) {
     canvas.width = 1024;
     canvas.height = 256;
-
-    // Fond blanc
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Emoji
     ctx.font = 'bold 100px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(subCategory.emoji, 150, canvas.height / 2);
-
-    // Nom de la sous-catégorie
+    ctx.fillText(category.emoji, 150, canvas.height / 2);
     ctx.fillStyle = '#2d1810';
     ctx.font = 'bold 45px Arial';
-    ctx.fillText(subCategory.nom, 600, canvas.height / 2);
+    ctx.fillText(category.nom, 600, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
-    const signGeometry = new THREE.PlaneGeometry(2.5, 0.65);
+    const signGeometry = new THREE.PlaneGeometry(4, 1);
     const signMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
     const sign = new THREE.Mesh(signGeometry, signMaterial);
-    sign.position.set(0, 2.9, 0);
-    stallGroup.add(sign);
+    sign.position.set(0, 4.2, 2.2);
+    building.add(sign);
   }
 
-  // Produits sur le comptoir (cubes colorés)
-  for (let i = 0; i < 3; i++) {
-    const productGeometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
-    const productMaterial = new THREE.MeshStandardMaterial({
-      color: i === 0 ? 0xdaa520 : i === 1 ? 0xff6347 : 0x90ee90,
-      roughness: 0.6
-    });
-    const product = new THREE.Mesh(productGeometry, productMaterial);
-    product.position.set((i - 1) * 0.5, 1.15, 0.3);
-    product.castShadow = true;
-    stallGroup.add(product);
-  }
+  building.position.set(x, 0, z);
+  building.rotation.y = rotation;
+  building.name = `StoneCutterWorkshop_${category.id}`;
 
-  stallGroup.position.set(x, 0, z);
-  stallGroup.rotation.y = rotation;
-  stallGroup.name = `SubCategoryStall_${subCategory.id}`;
-
-  scene.add(stallGroup);
-  return stallGroup;
+  return building;
 }
 
-// Fonction pour créer les stands des catégories principales en arc de cercle
-export function createCategoryStalls(scene: THREE.Scene) {
-  console.log('[Village3D] Création des stands de catégories en arc de cercle');
+// Fonction pour créer une forge AMÉLIORÉE
+function createForgeBuilding(x: number, z: number, rotation: number, category: any, fournisseurs: Fournisseur[] = [], produits: Produit[] = []) {
+  const building = new THREE.Group();
+  const scale = 1.6;
 
-  const categories = VILLAGE_CATEGORIES;
-  const categoryColors = [
-    0x8b4513, 0x2d5016, 0xdaa520, 0x4a90e2, 0xe74c3c,
-    0x9b59b6, 0xf39c12, 0x1abc9c, 0x34495e, 0xe67e22
+  const brickColor = 0x8b0000;
+  const metalColor = 0x2f4f4f;
+
+  // Charger la texture pierre
+  const textureLoader = new THREE.TextureLoader();
+  const pierreTexture = textureLoader.load('/textures/pierre.jpg');
+  pierreTexture.wrapS = pierreTexture.wrapT = THREE.RepeatWrapping;
+  pierreTexture.repeat.set(2, 2);
+
+  // Murs en pierre PLUS GRANDS avec texture
+  const wallGeometry = new THREE.BoxGeometry(5 * scale, 4.2 * scale, 4.5 * scale);
+  const wallMaterial = new THREE.MeshStandardMaterial({
+    map: pierreTexture,
+    color: 0x886666, // Teinte rougeâtre pour la forge
+    roughness: 0.9
+  });
+  const walls = new THREE.Mesh(wallGeometry, wallMaterial);
+  walls.position.set(0, 2.1 * scale, 0);
+  walls.castShadow = true;
+  walls.receiveShadow = true;
+  building.add(walls);
+
+  // Toit en métal PLUS GRAND
+  const roofGeometry = new THREE.BoxGeometry(5.6 * scale, 0.25 * scale, 5 * scale);
+  const roofMaterial = new THREE.MeshStandardMaterial({
+    color: metalColor,
+    roughness: 0.5,
+    metalness: 0.7
+  });
+  const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+  roof.position.set(0, 4.3 * scale, 0);
+  roof.castShadow = true;
+  building.add(roof);
+
+  // Cheminée fumante PLUS GRANDE
+  const chimneyGeometry = new THREE.CylinderGeometry(0.4 * scale, 0.4 * scale, 2.4 * scale, 12);
+  const chimneyMaterial = new THREE.MeshStandardMaterial({
+    color: 0x4a4a4a,
+    roughness: 0.9
+  });
+  const chimney = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
+  chimney.position.set(1.5 * scale, 5.6 * scale, 0);
+  chimney.castShadow = true;
+  building.add(chimney);
+
+  // Porte en métal PLUS GRANDE
+  const doorGeometry = new THREE.BoxGeometry(1.2 * scale, 2.4 * scale, 0.2);
+  const doorMaterial = new THREE.MeshStandardMaterial({
+    color: metalColor,
+    roughness: 0.4,
+    metalness: 0.8
+  });
+  const door = new THREE.Mesh(doorGeometry, doorMaterial);
+  door.position.set(0, 1.2 * scale, 2.25 * scale);
+  door.castShadow = true;
+  building.add(door);
+
+  // Enclume devant la forge PLUS GRANDE
+  const anvilBaseGeometry = new THREE.BoxGeometry(0.6 * scale, 0.4 * scale, 0.6 * scale);
+  const anvilMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2f4f4f,
+    roughness: 0.3,
+    metalness: 0.9
+  });
+  const anvilBase = new THREE.Mesh(anvilBaseGeometry, anvilMaterial);
+  anvilBase.position.set(-2 * scale, 0.2 * scale, 3.2 * scale);
+  anvilBase.castShadow = true;
+  building.add(anvilBase);
+
+  const anvilTopGeometry = new THREE.BoxGeometry(0.8 * scale, 0.3 * scale, 0.4 * scale);
+  const anvilTop = new THREE.Mesh(anvilTopGeometry, anvilMaterial);
+  anvilTop.position.set(-2 * scale, 0.55 * scale, 3.2 * scale);
+  anvilTop.castShadow = true;
+  building.add(anvilTop);
+
+  // Enseigne PLUS GRANDE
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    canvas.width = 1536;
+    canvas.height = 384;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#ffffff');
+    gradient.addColorStop(1, '#f5f5f0');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#8b0000';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+
+    ctx.font = 'bold 160px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(category.emoji, 220, canvas.height / 2);
+
+    ctx.fillStyle = '#2d1810';
+    ctx.font = 'bold 72px Arial';
+    ctx.fillText(category.nom, 900, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const signGeometry = new THREE.PlaneGeometry(5 * scale, 1.2 * scale);
+    const signMaterial = new THREE.MeshBasicMaterial({
+      map: texture,
+      side: THREE.DoubleSide
+    });
+    const sign = new THREE.Mesh(signGeometry, signMaterial);
+    sign.position.set(0, 5 * scale, 2.3 * scale);
+    building.add(sign);
+  }
+
+  // Vérifier s'il y a des produits pour ce bâtiment
+  const forgeProducts = produits.filter(p => {
+    const productCategoryId = p.souscategorie || p.categorie;
+    const categoryId = (category as any).pk || (category as any).id;
+    return productCategoryId === categoryId;
+  });
+
+  console.log(`[Forge ${category.nom}] Produits trouvés: ${forgeProducts.length}`);
+
+  // Si aucun produit, afficher panneau FERMÉ
+  if (forgeProducts.length === 0) {
+    const closedSign = createClosedSign(scale);
+    closedSign.position.set(0, 2.5 * scale, 2.3 * scale);
+    building.add(closedSign);
+    console.log(`  🔒 Panneau FERMÉ ajouté sur la forge`);
+  }
+
+  // Filtrer les fournisseurs qui ont des produits dans cette catégorie
+  const forgeFournisseursAvecProduits = fournisseurs.filter(f => {
+    const fournisseurId = (f as any).pk || (f as any).id;
+    return produits.some(p => {
+      const produitFournisseur = p.fournisseur || p.pk_fournisseur;
+      const productCategoryId = p.souscategorie || p.categorie;
+      const categoryId = (category as any).pk || (category as any).id;
+      return produitFournisseur === fournisseurId && productCategoryId === categoryId;
+    });
+  });
+
+  console.log(`[Forge ${category.nom}] Fournisseurs avec produits: ${forgeFournisseursAvecProduits.length}/${fournisseurs.length}`);
+
+  // PANCARTE FOURNISSEURS AU PIED du bâtiment (uniquement ceux avec produits)
+  const supplierTexture = createSupplierSign(forgeFournisseursAvecProduits, scale);
+  if (supplierTexture && forgeFournisseursAvecProduits.length > 0) {
+    const supplierSignGeometry = new THREE.PlaneGeometry(1.6 * scale, 1.1 * scale);
+    const supplierSignMaterial = new THREE.MeshStandardMaterial({
+      map: supplierTexture,
+      side: THREE.DoubleSide,
+      roughness: 0.8,
+      metalness: 0.1
+    });
+    const supplierSign = new THREE.Mesh(supplierSignGeometry, supplierSignMaterial);
+    supplierSign.position.set(0, 0.6 * scale, 2.8 * scale); // Devant le bâtiment
+    supplierSign.rotation.y = 0;
+    supplierSign.castShadow = true;
+    supplierSign.receiveShadow = true;
+
+    // Rendre cliquable
+    supplierSign.userData = {
+      type: 'suppliers',
+      suppliers: forgeFournisseursAvecProduits,
+      isClickable: true
+    };
+
+    building.add(supplierSign);
+
+    // Supports en métal (pour la forge)
+    for (let i = -1; i <= 1; i += 2) {
+      const support = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04 * scale, 0.04 * scale, 1.2 * scale, 8),
+        new THREE.MeshStandardMaterial({
+          color: metalColor,
+          roughness: 0.4,
+          metalness: 0.9
+        })
+      );
+      support.position.set(i * 0.7 * scale, 0.6 * scale, 2.8 * scale);
+      support.castShadow = true;
+      building.add(support);
+    }
+  }
+
+  // DRAPEAUX sur le toit avec texture (2 drapeaux de chaque côté)
+  const drapeauTexture = textureLoader.load('/textures/drapeaux.jpg');
+
+  for (let i = -1; i <= 1; i += 2) {
+    // Mât en métal
+    const poleGeometry = new THREE.CylinderGeometry(0.05 * scale, 0.05 * scale, 2.2 * scale, 8);
+    const poleMaterial = new THREE.MeshStandardMaterial({
+      color: metalColor,
+      roughness: 0.4,
+      metalness: 0.9
+    });
+    const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+    pole.position.set(i * 2.5 * scale, 5.5 * scale, 0);
+    pole.castShadow = true;
+    building.add(pole);
+
+    // Drapeau avec texture
+    const flagGeometry = new THREE.PlaneGeometry(1.1 * scale, 0.7 * scale);
+    const flagMaterial = new THREE.MeshStandardMaterial({
+      map: drapeauTexture,
+      side: THREE.DoubleSide,
+      transparent: true
+    });
+    const flag = new THREE.Mesh(flagGeometry, flagMaterial);
+    flag.position.set(i * 2.5 * scale + (i * 0.55 * scale), 6.2 * scale, 0);
+    flag.castShadow = true;
+    building.add(flag);
+  }
+
+  building.position.set(x, 0, z);
+  building.rotation.y = rotation;
+  building.name = `Forge_${category.id}`;
+
+  return building;
+}
+
+// Fonction pour créer une organisation logique du village
+export function createCategoryStalls(
+  scene: THREE.Scene,
+  categoriesAPI: any[] = [],
+  fournisseurs: Fournisseur[] = [],
+  produits: Produit[] = []
+) {
+  console.log('[Village3D] 🏘️ Création du village thématique');
+
+  // Utiliser les catégories de l'API si disponibles, sinon fallback sur villageConfig
+  const useAPICategories = categoriesAPI.length > 0;
+  console.log('[Village3D] Source des catégories:', useAPICategories ? 'API' : 'villageConfig');
+
+  // Convertir les catégories API au format attendu
+  const categories = useAPICategories
+    ? categoriesAPI.map((cat, index) => {
+        const converted = {
+          id: cat.pk,
+          nom: cat.nom,
+          emoji: cat.icone || '📦',
+          description: cat.description || '',
+          position: [0, 0, 0] as [number, number, number],
+          sousCategories: (cat.souscategories || []).map((subcat: any) => ({
+            id: subcat.pk,
+            nom: subcat.nom,
+            emoji: subcat.icone || '📁',
+            description: subcat.description || '',
+            categorieId: cat.pk
+          }))
+        };
+
+        if (index === 0) {
+          console.log('[objects.ts] Première catégorie convertie:', converted);
+          console.log('[objects.ts] Nombre de sous-catégories:', converted.sousCategories.length);
+          console.log('[objects.ts] Première sous-catégorie:', converted.sousCategories[0]);
+        }
+
+        return converted;
+      })
+    : VILLAGE_CATEGORIES;
+
+  // Organisation en cercle 360° autour de la caméra
+  // Ordre logique : alimentation devant, puis sens horaire
+  const orderedCategories = [
+    // 🍽️ ZONE ALIMENTATION (NORD - Devant) - 11 stands
+    ...categories.filter(c => c.nom.includes('Boulangerie')), // 🥖 Pain (145)
+    ...categories.filter(c => c.nom.includes('Maraîcher')), // 🥕 Légumes (148)
+    ...categories.filter(c => c.nom.includes('Boucherie')), // 🥩 Viandes (147)
+    ...categories.filter(c => c.nom.includes('Fromagerie')), // 🧀 Fromage (146)
+    ...categories.filter(c => c.nom.includes('Produits Transformés')), // 🍝 Pâtes & Plats (151)
+    ...categories.filter(c => c.nom.includes('Épicerie')), // 🍷 Vins (149)
+    ...categories.filter(c => c.nom.includes('Café')), // ☕ Boissons (150)
+    ...categories.filter(c => c.nom.includes('Spécialités')), // 🏔️ Spécialités régionales (152)
+    ...categories.filter(c => c.nom.includes('Poissonnerie')), // 🐟 Poissons (153)
+    ...categories.filter(c => c.nom.includes('Volailles')), // 🐓 Volailles & Œufs (154)
+    ...categories.filter(c => c.nom.includes('Pâtisserie') && c.nom.includes('Confiserie')), // 🍰 Pâtisserie (155)
+
+    // 🏡 ZONE HABITAT (NORD-EST) - 2 stands
+    ...categories.filter(c => c.nom.includes('Habitat') && !c.nom.includes('Autonomie')),
+    ...categories.filter(c => c.nom.includes('Eau')),
+
+    // 🏗️ ZONE CONSTRUCTION (EST) - 2 stands
+    ...categories.filter(c => c.nom.includes('Matériaux')),
+    ...categories.filter(c => c.nom.includes('Énergie')),
+
+    // 🎨 ZONE ARTISANAT (SUD-EST) - 2 stands
+    ...categories.filter(c => c.nom.includes('Artisanat Local')),
+    ...categories.filter(c => c.nom.includes('Art de Vivre')),
+
+    // 🌱 ZONE NATURE (SUD) - 2 stands
+    ...categories.filter(c => c.nom.includes('Autonomie Alimentaire')),
+    ...categories.filter(c => c.nom.includes('Plantes')),
+
+    // 🌍 ZONE EXPÉRIENCE (OUEST) - 1 stand
+    ...categories.filter(c => c.nom.includes('Expérience')),
   ];
 
-  // Configuration de l'arc de cercle - SEULEMENT 10 CATÉGORIES
-  const radius = 25; // Rayon
-  const arcAngle = Math.PI; // 180 degrés (demi-cercle)
-  const startAngle = -arcAngle / 2; // Centrer l'arc à -90°
+  // Couleurs par type de catégorie
+  const categoryColors: { [key: string]: number } = {
+    'Boulangerie': 0xdaa520, // Or
+    'Fromagerie': 0xffd700, // Or clair
+    'Boucherie': 0xff6347, // Rouge
+    'Maraîcher': 0x90ee90, // Vert clair
+    'Épicerie': 0x722f37, // Bordeaux
+    'Café': 0x8b4513, // Brun
+    'Produits Transformés': 0xffb347, // Orange clair (pâtes/plats préparés)
+    'Spécialités': 0xcd853f, // Peru (spécialités régionales)
+    'Poissonnerie': 0x4682b4, // Bleu acier (poissons et fruits de mer)
+    'Volailles': 0xf5deb3, // Wheat (volailles et œufs)
+    'Pâtisserie': 0xffb6c1, // Rose clair (pâtisserie et confiserie)
+    'Habitat': 0x4a90e2, // Bleu
+    'Eau': 0x87ceeb, // Bleu ciel
+    'Autonomie': 0x2d5016, // Vert foncé
+    'Plantes': 0x228b22, // Vert forêt
+    'Matériaux': 0x8b7355, // Brun pierre
+    'Énergie': 0xffa500, // Orange
+    'Artisanat': 0x9b59b6, // Violet
+    'Art de Vivre': 0xdda0dd, // Violet clair
+    'Expérience': 0x48d1cc, // Turquoise
+  };
 
-  categories.forEach((category, index) => {
-    // Calculer l'angle pour ce stand
-    const angle = startAngle + (index / (categories.length - 1)) * arcAngle;
+  let totalStands = 0;
+  const radius = 22; // Rayon agrandi pour mieux voir les stands et leurs produits
+  const totalCategories = orderedCategories.length;
 
-    // Calculer la position en coordonnées polaires
-    const x = Math.sin(angle) * radius;
-    const z = -Math.cos(angle) * radius;
+  // Créer les stands en cercle
+  orderedCategories.forEach((category, index) => {
+    // Calculer l'angle pour ce stand (répartition uniforme)
+    // Commencer à -90° (devant = nord) et aller dans le sens horaire
+    const angle = (index / totalCategories) * Math.PI * 2 - Math.PI / 2;
 
-    // Rotation pour que le stand face vers le centre (0, 0, 0)
-    const rotation = angle + Math.PI; // +180° pour faire face au centre
+    // Position sur le cercle
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
 
-    const color = categoryColors[category.id % categoryColors.length];
+    // Rotation pour que le stand fasse face au centre (0, 0)
+    // On calcule l'angle du vecteur qui pointe vers le centre
+    const rotation = Math.atan2(-x, -z);
+
+    // Déterminer la couleur selon le type de catégorie
+    let color = 0x8b4513; // Couleur par défaut
+    for (const [key, value] of Object.entries(categoryColors)) {
+      if (category.nom.includes(key)) {
+        color = value;
+        break;
+      }
+    }
+
+    console.log(`${index + 1}/${totalCategories}: ${category.emoji} ${category.nom} - Position: (${x.toFixed(1)}, ${z.toFixed(1)})`);
 
     try {
-      const stallGroup = createSubCategoryStall(
-        scene,
-        x,
-        z,
-        rotation,
-        category,
-        color
-      );
+      let buildingGroup: THREE.Group;
 
-      // IMPORTANT: Ajouter userData au GROUP et à tous ses enfants
+      // Bâtiments spécialisés selon la catégorie
+      if (category.nom.includes('Matériaux') || category.emoji === '🌳') {
+        buildingGroup = createCarpenterWorkshop(x, z, rotation, category, fournisseurs, produits);
+        console.log(`  🏗️ Atelier de charpentier`);
+      } else if (category.nom.includes('Énergie') || category.emoji === '⚡') {
+        buildingGroup = createForgeBuilding(x, z, rotation, category, fournisseurs, produits);
+        console.log(`  🔥 Forge`);
+      } else {
+        buildingGroup = createSubCategoryStall(x, z, rotation, category, color, fournisseurs, produits);
+      }
+
+      // userData avec la catégorie complète
       const userData = {
         categoryId: category.id,
         category: category,
-        type: 'category'
+        type: 'category',
+        isClickable: true,
+        angle: angle
       };
 
-      stallGroup.userData = userData;
+      // Appliquer userData au groupe parent
+      Object.assign(buildingGroup.userData, userData);
 
-      // Propager userData à tous les enfants pour faciliter la détection
-      stallGroup.traverse((child) => {
-        child.userData = userData;
+      // Propager aux enfants SANS écraser les userData spécifiques existants
+      buildingGroup.traverse((child) => {
+        if (child !== buildingGroup) {
+          // Ne pas écraser si l'enfant a déjà un type spécifique (comme 'suppliers')
+          if (!child.userData.type || child.userData.type === 'category') {
+            Object.assign(child.userData, userData);
+          } else {
+            // Garder le type existant mais ajouter les autres propriétés
+            const childType = child.userData.type;
+            const childSuppliers = child.userData.suppliers;
+            const childIsClickable = child.userData.isClickable;
+            Object.assign(child.userData, userData);
+            // Restaurer les propriétés spécifiques
+            child.userData.type = childType;
+            if (childSuppliers) child.userData.suppliers = childSuppliers;
+            if (childIsClickable !== undefined) child.userData.isClickable = childIsClickable;
+          }
+        }
       });
 
-      console.log(`[Village3D] ✅ Stand créé: ${category.emoji} ${category.nom} à (${x.toFixed(1)}, ${z.toFixed(1)}) - ${(angle * 180 / Math.PI).toFixed(0)}°`);
+      scene.add(buildingGroup);
+      totalStands++;
+
+      console.log(`  ✅ Stand ${index + 1} créé`);
     } catch (error) {
-      console.error(`Erreur lors de la création du stand ${category.nom}:`, error);
+      console.error(`  ❌ Erreur pour ${category.nom}:`, error);
     }
   });
 
-  console.log(`[Village3D] ✅ ${categories.length} stands de catégories créés en arc de cercle (rayon: ${radius})`);
+  console.log(`\n[Village3D] ✅ ${totalStands} stands créés en cercle (360°)`);
 }
 
 export async function placeObjects(
   scene: THREE.Scene,
   textures: { texPave: THREE.Texture },
   fournisseurs: Fournisseur[] = [],
-  produits: Produit[] = []
+  produits: Produit[] = [],
+  categoriesAPI: any[] = [] // Catégories chargées depuis l'API
 ) {
-  console.log('[Village3D] Placement des objets avec', fournisseurs.length, 'fournisseurs et', produits.length, 'produits');
+  console.log('[placeObjects] 🔍 REÇU:');
+  console.log('[placeObjects] - fournisseurs.length:', fournisseurs.length);
+  console.log('[placeObjects] - produits.length:', produits.length);
+  console.log('[placeObjects] - categoriesAPI.length:', categoriesAPI.length);
+  console.log('[placeObjects] - categoriesAPI:', categoriesAPI);
+  if (categoriesAPI.length > 0) {
+    console.log('[placeObjects] - Première catégorie:', categoriesAPI[0]);
+    console.log('[placeObjects] - Sous-catégories:', categoriesAPI[0].souscategories);
+  }
 
   // Créer le sol
   createGround(scene, textures.texPave);
 
-  // Créer les stands de catégories alignés en ligne
-  createCategoryStalls(scene);
+  // Créer les stands de catégories avec les données de l'API si disponibles
+  createCategoryStalls(scene, categoriesAPI, fournisseurs, produits);
 
-  // Charger l'église
+  // Charger l'église au fond du cercle (position 12h - derrière)
   try {
-    await loadGLBModel(
+    const egliseRadius = 35; // Plus loin que les stands
+    const egliseModel = await loadGLBModel(
       scene,
       '/models/eglise.glb',
-      { x: 0, y: 0, z: -40 },
-      1,
-      0
+      { x: 0, y: 0, z: -egliseRadius }, // Position devant (Nord)
+      1.2, // Légèrement plus grande
+      Math.PI, // Rotation de 180° pour que l'église fasse face au centre
+      { nom: 'Église', isClickable: false, type: 'decoration' } // Marquer comme non-cliquable
     );
+
+    // Propager le userData à tous les enfants de l'église pour éviter les clics
+    egliseModel.traverse((child) => {
+      Object.assign(child.userData, { isClickable: false, type: 'decoration', nom: 'Église' });
+    });
+
+    console.log('[Village3D] ✅ Église positionnée au nord du cercle (non-cliquable)');
   } catch (error) {
     console.error('Erreur lors du chargement de l\'église:', error);
   }

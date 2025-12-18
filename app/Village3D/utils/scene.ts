@@ -5,13 +5,14 @@ export function initScene(container: HTMLElement) {
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(
-    60,
+    75,  // Champ de vision plus large pour mieux voir autour
     window.innerWidth / window.innerHeight,
     0.1,
     2000
   );
-  // Positionner la caméra au centre de l'arc de cercle
-  camera.position.set(0, 5, 0);
+  // Positionner la caméra au centre, au niveau du sol, comme un visiteur
+  camera.position.set(0, 1.7, 0); // 1.7m = hauteur des yeux d'un humain
+  camera.lookAt(0, 1.7, -10); // Regarder droit devant vers les stands
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -78,19 +79,25 @@ export function setupResponsive(camera: THREE.PerspectiveCamera, renderer: THREE
 export function createOrbitControls(camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) {
   const orbit = new OrbitControls(camera, renderer.domElement);
   orbit.enableDamping = true;
-  orbit.enablePan = false;
+  orbit.dampingFactor = 0.05;
+  orbit.enablePan = false; // Désactiver le déplacement latéral
 
-  // Limiter la rotation horizontale à 180° (de -90° à +90°)
-  orbit.minAzimuthAngle = -Math.PI / 2; // -90 degrés
-  orbit.maxAzimuthAngle = Math.PI / 2;  // +90 degrés
+  // Point de visée au niveau des yeux, légèrement devant
+  orbit.target.set(0, 1.7, -10);
 
-  // Limiter la rotation verticale pour éviter de regarder en dessous
-  orbit.minPolarAngle = Math.PI / 6;    // 30 degrés (limite haute)
-  orbit.maxPolarAngle = Math.PI / 2.2;  // ~80 degrés (limite basse)
+  // Rotation 360° complète - pas de limite horizontale
+  // orbit.minAzimuthAngle et maxAzimuthAngle sont désactivés pour rotation complète
 
-  // Limiter le zoom
-  orbit.minDistance = 5;  // Distance minimale
-  orbit.maxDistance = 50; // Distance maximale
+  // Limiter la rotation verticale pour une expérience naturelle
+  orbit.minPolarAngle = Math.PI / 4;    // 45 degrés (ne pas trop regarder en haut)
+  orbit.maxPolarAngle = Math.PI / 1.8;  // ~100 degrés (ne pas regarder le sol)
+
+  // Limiter le zoom pour rester au niveau du sol
+  orbit.minDistance = 5;   // Distance minimale (rester proche)
+  orbit.maxDistance = 30;  // Distance maximale (vue d'ensemble locale)
+
+  // Forcer la mise à jour des contrôles
+  orbit.update();
 
   return orbit;
 }

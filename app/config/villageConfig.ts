@@ -163,30 +163,152 @@ export const VILLAGE_CATEGORIES: CategoryConfig[] = [
     ]
   },
 
-  // GASTRONOMIE DU TERROIR
+  // FRUITS & LÉGUMES (Backend: Cat 145)
   {
-    id: 9,
-    nom: 'Gastronomie du Terroir',
-    emoji: '🍷',
-    description: 'Produits gastronomiques d\'exception',
+    id: 145,
+    nom: 'Fruits & Légumes',
+    emoji: '🥕',
+    description: 'Fruits et légumes frais du terroir',
     position: [5, 0, -10],
     sousCategories: [
-      { id: 43, nom: 'Boulangerie Artisanale', emoji: '🥖', description: 'Pain au levain et viennoiseries', categorieId: 9 },
-      { id: 44, nom: 'Pâtisserie Fine', emoji: '🧁', description: 'Gâteaux et pâtisseries artisanales', categorieId: 9 },
-      { id: 45, nom: 'Fromagerie Fermière', emoji: '🧀', description: 'Fromages fermiers au lait cru', categorieId: 9 },
-      { id: 46, nom: 'Boucherie Locale', emoji: '🥩', description: 'Viandes d\'éleveurs locaux', categorieId: 9 },
-      { id: 47, nom: 'Charcuterie Artisanale', emoji: '🥓', description: 'Saucissons, jambons et terrines', categorieId: 9 },
-      { id: 48, nom: 'Poissonnerie', emoji: '🐟', description: 'Poissons frais et fruits de mer', categorieId: 9 },
-      { id: 49, nom: 'Primeur Bio', emoji: '🥕', description: 'Fruits et légumes bio du terroir', categorieId: 9 },
-      { id: 50, nom: 'Épicerie Fine', emoji: '🫙', description: 'Huiles, condiments et conserves', categorieId: 9 },
-      { id: 51, nom: 'Vins & Spiritueux', emoji: '🍷', description: 'Vins de vignerons et spiritueux', categorieId: 9 },
-      { id: 52, nom: 'Champagne Bio', emoji: '🍾', description: 'Champagnes et effervescents premium', categorieId: 9 },
-      { id: 53, nom: 'Miel & Produits de la Ruche', emoji: '🍯', description: 'Miels, pollen, propolis', categorieId: 9 },
-      { id: 54, nom: 'Café Torréfié', emoji: '☕', description: 'Torréfaction artisanale sur place', categorieId: 9 },
-      { id: 55, nom: 'Thés & Tisanes', emoji: '🍵', description: 'Thés biologiques et tisanes locales', categorieId: 9 },
-      { id: 56, nom: 'Chocolaterie', emoji: '🍫', description: 'Chocolat bean-to-bar artisanal', categorieId: 9 },
-      { id: 57, nom: 'Confiserie Artisanale', emoji: '🍬', description: 'Bonbons et confiseries maison', categorieId: 9 },
-      { id: 58, nom: 'Crémerie & Laiterie', emoji: '🥛', description: 'Lait, beurre et crème fermiers', categorieId: 9 },
+      { id: 43, nom: 'Primeur Bio', emoji: '🥕', description: 'Fruits et légumes bio', categorieId: 145 },
+      { id: 44, nom: 'Fruits Frais', emoji: '🍎', description: 'Fruits de saison', categorieId: 145 },
+    ]
+  },
+
+  // PRODUITS LAITIERS (Backend: Cat 146)
+  {
+    id: 146,
+    nom: 'Produits laitiers',
+    emoji: '🧀',
+    description: 'Fromages fermiers et produits laitiers',
+    position: [10, 0, -10],
+    sousCategories: [
+      { id: 45, nom: 'Fromagerie', emoji: '🧀', description: 'Fromages fermiers', categorieId: 146 },
+      { id: 58, nom: 'Crèmerie', emoji: '🥛', description: 'Lait, beurre et crème', categorieId: 146 },
+    ]
+  },
+
+  // BOULANGERIE (Backend: Cat 147)
+  {
+    id: 147,
+    nom: 'Boulangerie',
+    emoji: '🥖',
+    description: 'Pains et viennoiseries artisanales',
+    position: [-10, 0, -10],
+    sousCategories: [
+      { id: 46, nom: 'Boulangerie Artisanale', emoji: '🥖', description: 'Pain au levain', categorieId: 147 },
+      { id: 47, nom: 'Viennoiseries', emoji: '🥐', description: 'Croissants et brioches', categorieId: 147 },
+      { id: 48, nom: 'Pâtisserie', emoji: '🧁', description: 'Gâteaux et tartes', categorieId: 147 },
+    ]
+  },
+
+  // ÉPICERIE (Backend: Cat 148)
+  {
+    id: 148,
+    nom: 'Épicerie',
+    emoji: '🫙',
+    description: 'Produits d\'épicerie fine',
+    position: [-5, 0, -10],
+    sousCategories: [
+      { id: 49, nom: 'Épicerie Fine', emoji: '🫙', description: 'Huiles, condiments et conserves', categorieId: 148 },
+      { id: 53, nom: 'Miel & Confiture', emoji: '🍯', description: 'Miels et confitures artisanales', categorieId: 148 },
+    ]
+  },
+
+  // BOISSONS (Backend: Cat 149)
+  {
+    id: 149,
+    nom: 'Boissons',
+    emoji: '🍷',
+    description: 'Vins, spiritueux et boissons',
+    position: [0, 0, -10],
+    sousCategories: [
+      { id: 50, nom: 'Vins', emoji: '🍷', description: 'Vins de vignerons', categorieId: 149 },
+      { id: 51, nom: 'Spiritueux', emoji: '🥃', description: 'Spiritueux artisanaux', categorieId: 149 },
+      { id: 52, nom: 'Champagne', emoji: '🍾', description: 'Champagnes et effervescents', categorieId: 149 },
+    ]
+  },
+
+  // VIANDES & POISSONS (Backend: Cat 150)
+  {
+    id: 150,
+    nom: 'Viandes & Poissons',
+    emoji: '🥩',
+    description: 'Viandes, charcuteries et poissons',
+    position: [15, 0, -10],
+    sousCategories: [
+      { id: 54, nom: 'Boucherie', emoji: '🥩', description: 'Viandes d\'éleveurs locaux', categorieId: 150 },
+      { id: 55, nom: 'Charcuterie', emoji: '🥓', description: 'Saucissons, jambons et terrines', categorieId: 150 },
+      { id: 56, nom: 'Poissonnerie', emoji: '🐟', description: 'Poissons frais', categorieId: 150 },
+      { id: 57, nom: 'Volailles', emoji: '🐓', description: 'Volailles fermières', categorieId: 150 },
+    ]
+  },
+
+  // SURGELÉS (Backend: Cat 151)
+  {
+    id: 151,
+    nom: 'Surgelés',
+    emoji: '❄️',
+    description: 'Produits surgelés et glaces',
+    position: [5, 0, -15],
+    sousCategories: [
+      { id: 59, nom: 'Plats Préparés', emoji: '🍝', description: 'Plats cuisinés surgelés', categorieId: 151 },
+      { id: 60, nom: 'Légumes Surgelés', emoji: '🥦', description: 'Légumes surgelés', categorieId: 151 },
+      { id: 61, nom: 'Glaces', emoji: '🍨', description: 'Glaces artisanales', categorieId: 151 },
+      { id: 62, nom: 'Surgelés Divers', emoji: '❄️', description: 'Autres produits surgelés', categorieId: 151 },
+    ]
+  },
+
+  // SNACKS & CONFISERIES (Backend: Cat 152)
+  {
+    id: 152,
+    nom: 'Snacks & Confiseries',
+    emoji: '🍬',
+    description: 'Bonbons, chocolats et snacks',
+    position: [-15, 0, -10],
+    sousCategories: [
+      { id: 63, nom: 'Confiseries', emoji: '🍬', description: 'Bonbons et confiseries', categorieId: 152 },
+      { id: 64, nom: 'Chocolaterie', emoji: '🍫', description: 'Chocolats artisanaux', categorieId: 152 },
+    ]
+  },
+
+  // BIO & DIÉTÉTIQUE (Backend: Cat 153)
+  {
+    id: 153,
+    nom: 'Bio & Diététique',
+    emoji: '🌱',
+    description: 'Produits biologiques et diététiques',
+    position: [-10, 0, -15],
+    sousCategories: [
+      { id: 65, nom: 'Produits Bio', emoji: '🌱', description: 'Alimentation biologique', categorieId: 153 },
+      { id: 66, nom: 'Compléments', emoji: '💊', description: 'Compléments alimentaires', categorieId: 153 },
+    ]
+  },
+
+  // MATÉRIAUX DE CONSTRUCTION (Backend: Cat 154)
+  {
+    id: 154,
+    nom: 'Matériaux de Construction',
+    emoji: '🏗️',
+    description: 'Matériaux pour la construction',
+    position: [10, 0, -15],
+    sousCategories: [
+      { id: 67, nom: 'Matériaux Écologiques', emoji: '🪵', description: 'Bois et matériaux éco-responsables', categorieId: 154 },
+      { id: 68, nom: 'Quincaillerie', emoji: '🔨', description: 'Outils et quincaillerie', categorieId: 154 },
+    ]
+  },
+
+  // ÉNERGIE & ÉCOLOGIE (Backend: Cat 155)
+  {
+    id: 155,
+    nom: 'Énergie & Écologie',
+    emoji: '☀️',
+    description: 'Solutions énergétiques et écologiques',
+    position: [15, 0, -15],
+    sousCategories: [
+      { id: 69, nom: 'Énergie Solaire', emoji: '☀️', description: 'Panneaux solaires et équipements', categorieId: 155 },
+      { id: 70, nom: 'Éco-produits', emoji: '♻️', description: 'Produits écologiques', categorieId: 155 },
     ]
   },
 
