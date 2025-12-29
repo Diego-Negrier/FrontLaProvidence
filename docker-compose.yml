@@ -31,7 +31,7 @@ services:
       - "traefik.http.routers.frontlaprovidence-https.tls=true"
       - "traefik.http.routers.frontlaprovidence-https.tls.certresolver=letsencrypt"
       - "traefik.http.routers.frontlaprovidence-https.service=frontlaprovidence-service"
-      - "traefik.http.routers.frontlaprovidence-https.middlewares=frontlaprovidence-security-headers,frontlaprovidence-compress"
+      - "traefik.http.routers.frontlaprovidence-https.middlewares=frontlaprovidence-security-headers,frontlaprovidence-compress,maintenance-errors@file"
 
       # ===== Service =====
       - "traefik.http.services.frontlaprovidence-service.loadbalancer.server.port=3007"
